@@ -2,15 +2,13 @@ library(shiny)
 library(plotly)
 
 ui <- fluidPage(
-  titlePanel(
     fluidRow(
-        column(9,"Arduino Logger Visualizer (Cohort 2020)"),
-        column(3,selectInput("variable", NULL,
-                           c("Everyone's Data" = "alldata",
-                             "variousemail" = "email")), 
-              )
-            )
-  ),
+        column(8, titlePanel("Arduino Logger Visualizer (Cohort 2020)")),
+        column(4, column(1, style = "margin-top : 20px; text-align: right;", icon("user", class = "fa-2x", lib="font-awesome")),
+                  column(11,style = "margin-top : 20px; text-align: center;",selectInput("test", NULL,
+                             choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email")),
+              ))
+            ),
   strong("CHOOSE EXERCISE"),
   tabsetPanel(type = "tabs",
               tabPanel(strong("ReactionTime"), sidebarPanel(
@@ -23,7 +21,7 @@ ui <- fluidPage(
               mainPanel(
                 
                 # Output: Histogram ----
-                plotOutput(outputId = "distPlot")
+                plotlyOutput("plot1"),
                 
               )),
             
