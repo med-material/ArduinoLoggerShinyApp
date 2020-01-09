@@ -16,18 +16,18 @@ mydb = dbConnect(MySQL(),
 
 
 
-FetchDatas <- function(conditionLists = list(), option = "*")
+FetchDatas <- function(conditionLists = list(), option = "*" , tablename = "reactiontime")
 {
-  queryString = GenerateQuery(conditionLists, option)
+  queryString = GenerateQuery(conditionLists, option, tablename)
   print(dbGetQuery(mydb, queryString))
   return(dbGetQuery(mydb, queryString))
 }
 
 
-GenerateQuery <- function(conditionLists, option)
+GenerateQuery <- function(conditionLists, option , tablename)
 {
   queryString = paste("SELECT", option, sep = " ")
-  queryString = paste(queryString, "FROM reactiontime", sep = " ")
+  queryString = paste(queryString, "FROM",tablename, sep = " ")
   
   if (length(conditionLists) == 0)
   {
@@ -71,7 +71,7 @@ CountField <- function(fieldName = "*", conditions = list())
   tempField <- paste("COUNT(DISTINCT ", fieldName, sep = "")
   tempField <- paste(tempField, ")", sep = "")
   return(GetField(tempField, FetchDatas(conditions, tempField)))
-}
+  }
 
 
 GenerateSelectChoices <- function(default = "", text = "", fieldName, conditions = list(), extraInfo = list())
