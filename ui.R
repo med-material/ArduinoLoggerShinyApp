@@ -12,16 +12,16 @@ ui <- fluidPage(
         column(8, titlePanel("Arduino Logger Visualizer (Cohort 2020)")),
         column(4, column(1, style = "margin-top : 20px; text-align: right;", icon("user", class = "fa-2x", lib="font-awesome")),
                   column(11,style = "margin-top : 20px; text-align: center;",selectInput("test", NULL,
-                             choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email")),
+                             choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email" , tablename = "synch")),
               ))
             ),
   strong("CHOOSE EXERCISE"),
-  tabsetPanel(type = "tabs",
-              tabPanel(strong("ReactionTime"), sidebarPanel( 
+  tabsetPanel(id = "tabs", type = "tabs",
+              tabPanel(id = "reactpan", strong("ReactionTime"), sidebarPanel( 
                 p("CHOOSE VISUALIZATION"),
-                radioButtons("visual", NULL,
-                             c("Reaction Time per Trial" = "trialbutton",
-                               "Reaction Time based on Itensity" = "intensbutton")),
+                div(class="box", radioButtons("visual", NULL,
+                             c("Reaction Time per Trial" = "radio1",
+                               "Reaction Time based on Itensity" = "radio2"))),
                 disabled(checkboxInput("Alldatacheck", "Compare To Everyone's Data", value = FALSE)),
               ), 
               
@@ -32,19 +32,23 @@ ui <- fluidPage(
                 
               )),
             
-              tabPanel(strong("SynchTime"), sidebarPanel( 
-                #p("choose parameter"),
-                #selectInput("test", NULL,
-                #choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email"),
-               # disabled(checkboxInput("Alldatacheck", "Compare To Everyone's Data", value = FALSE)),
-              #), 
+              tabPanel(id = "synchtab",title = strong("SynchTime"), sidebarPanel( 
+                p("choose parameter"),
+                selectInput("Param", NULL,
+                            choices = GenerateSelectChoices(default = "No Comment", text = "", fieldName = "Comment" , tablename = "synch")),
+                checkboxInput("showled", "Show LED Data", value = TRUE),
+                checkboxInput("showerm", "Show ERM Data", value = TRUE),
+                checkboxInput("synchAlldatacheck", "Compare To Everyone's Data", value = FALSE),
+              ),
               
-              #mainPanel(
+              mainPanel(
                 
-                # Output: Histogram ----
-               # plotlyOutput("plot1"),
+            #Output: Histogram ----
+               plotlyOutput("plot2"),
+              plotlyOutput("plot3"),
                 
-              )),
+              )
+            ),
               tabPanel(strong("Physiological Data"), tableOutput("table"))),
 
 )

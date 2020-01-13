@@ -1,4 +1,6 @@
 library(RMySQL)
+library(plyr)
+library(ggplot2)
 
 my_data <- read.csv("credentials.csv", header=TRUE,sep=",", colClasses=c("character","character","character","character"))
 print(my_data[1, "host"])
@@ -16,13 +18,30 @@ mydb = dbConnect(MySQL(),
 
 
 
-FetchDatas <- function(conditionLists = list(), option = "*" , tablename = "reactiontime")
+FetchDatas <- function(conditionLists = list(), option = "*" , tablename="reactiontime")
 {
   queryString = GenerateQuery(conditionLists, option, tablename)
   print(dbGetQuery(mydb, queryString))
   return(dbGetQuery(mydb, queryString))
 }
 
+createframe <- function(dfname, mail, modality){
+  dfname <- subset(contage, synchdataLED.Email == mail & synchdataLED.Modal == modality)
+  return(dfname)
+}
+
+synchdataLED$ReactionTimeRounded = round(as.numeric(synchdataLED$ReactionTime), digits=-1)
+contage = count(synchdataLED, vars =c("synchdataLED$ReactionTimeRounded","synchdataLED$Email","synchdataLED$TimeStamp","synchdataLED$Modal","synchdataLED$MusicalAbility","synchdataLED$Comment"))
+
+#reactiondatatest = FetchDatas(option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "reactiontime")
+#reactiondatatest$ReactionTimeRounded = round(as.numeric(reactiondatatest$ReactionTime), digits=-1)
+#contage = count(reactiondatatest, vars =c("reactiondatatest$ReactionTimeRounded"))
+#varaupif = contage$reactiondatatest.ReactionTimeRounded
+#varraupif = contage$freq
+#x <- data.frame("reactiontimecalculated" = contage$reactiondatatest.ReactionTimeRounded, "frequence" = contage$freq)
+#x
+#varraupif
+#max(contage$freq)
 
 GenerateQuery <- function(conditionLists, option , tablename)
 {
@@ -74,11 +93,11 @@ CountField <- function(fieldName = "*", conditions = list())
   }
 
 
-GenerateSelectChoices <- function(default = "", text = "", fieldName, conditions = list(), extraInfo = list())
+GenerateSelectChoices <- function(default = "", text = "", fieldName, conditions = list(), tablename="reactiontime", extraInfo = list())
 {
   tempList <- list()
   tempList[[default]] <- -1
-  fieldList <- GetField(fieldName, FetchDatas(conditions, paste("DISTINCT", fieldName)))
+  fieldList <- GetField(fieldName, FetchDatas(conditions,tablename = tablename, paste("DISTINCT", fieldName)))
   extraTextString = ""
   
   if(length(fieldList) == 0)
