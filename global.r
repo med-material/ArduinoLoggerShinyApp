@@ -30,11 +30,7 @@ createframe <- function(dfname, mail, modality){
   return(dfname)
 }
 
-synchdataLED$ReactionTimeRounded = round(as.numeric(synchdataLED$ReactionTime), digits=-1)
-contage = count(synchdataLED, vars =c("synchdataLED$ReactionTimeRounded","synchdataLED$Email","synchdataLED$TimeStamp","synchdataLED$Modal","synchdataLED$MusicalAbility","synchdataLED$Comment"))
 
-#reactiondatatest = FetchDatas(option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "reactiontime")
-#reactiondatatest$ReactionTimeRounded = round(as.numeric(reactiondatatest$ReactionTime), digits=-1)
 #contage = count(reactiondatatest, vars =c("reactiondatatest$ReactionTimeRounded"))
 #varaupif = contage$reactiondatatest.ReactionTimeRounded
 #varraupif = contage$freq
@@ -146,4 +142,11 @@ GenerateSelectChoices <- function(default = "", text = "", fieldName, conditions
   }
   return(tempList)
 }
+synchdataLED = FetchDatas(option = "*", tablename = "synch")
+
+synchdataLED$ReactionTimeRounded = round(as.numeric(synchdataLED$ReactionTime), digits=-1)
+contage = count(synchdataLED, vars =c("synchdataLED$ReactionTimeRounded","synchdataLED$Email","synchdataLED$TimeStamp","synchdataLED$Modal","synchdataLED$MusicalAbility","synchdataLED$Comment"))
+
+reactiondatatest = FetchDatas(option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "reactiontime")
+reactiondatatest$ReactionTimeRounded = round(as.numeric(reactiondatatest$ReactionTime), digits=-1)
 
