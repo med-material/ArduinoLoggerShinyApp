@@ -18,7 +18,7 @@ mydb = dbConnect(MySQL(),
 
 
 
-FetchDatas <- function(conditionLists = list(), option = "*" , tablename="reactiontime")
+FetchDatas <- function(conditionLists = list(), option = "*" , tablename="v_reactiontime")
 {
   queryString = GenerateQuery(conditionLists, option, tablename)
   print(dbGetQuery(mydb, queryString))
@@ -89,7 +89,7 @@ CountField <- function(fieldName = "*", conditions = list())
   }
 
 
-GenerateSelectChoices <- function(default = "", text = "", fieldName, conditions = list(), tablename="reactiontime", extraInfo = list())
+GenerateSelectChoices <- function(default = "", text = "", fieldName, conditions = list(), tablename="v_reactiontime", extraInfo = list())
 {
   tempList <- list()
   tempList[[default]] <- -1
@@ -147,6 +147,6 @@ synchdataLED = FetchDatas(option = "*", tablename = "synch")
 synchdataLED$ReactionTimeRounded = round(as.numeric(synchdataLED$ReactionTime), digits=-1)
 contage = count(synchdataLED, vars =c("synchdataLED$ReactionTimeRounded","synchdataLED$Email","synchdataLED$TimeStamp","synchdataLED$Modal","synchdataLED$MusicalAbility","synchdataLED$Comment"))
 
-reactiondatatest = FetchDatas(option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "reactiontime")
+reactiondatatest = FetchDatas(option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "v_reactiontime")
 reactiondatatest$ReactionTimeRounded = round(as.numeric(reactiondatatest$ReactionTime), digits=-1)
 

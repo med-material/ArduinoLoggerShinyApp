@@ -5,7 +5,7 @@ server = function(input, output, session) {
   observeEvent({input$tabs},{
     print(input$tabs)
     if(input$tabs == "<strong>ReactionTime</strong>"){
-      updateSelectInput(session , "test", choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email" , tablename = "reactiontime"))
+      updateSelectInput(session , "test", choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email" , tablename = "v_reactiontime"))
      
     }
     else if(input$tabs == "<strong>SynchTime</strong>"){
@@ -54,7 +54,7 @@ server = function(input, output, session) {
         }
       
       pal <- c("red","green")
-      reactiondata = FetchDatas(conditionLists= var , option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "reactiontime")
+      reactiondata = FetchDatas(conditionLists= var , option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "v_reactiontime")
       reactiondata$ReactionTimeRounded = round(reactiondata$ReactionTime, digits=-1)
 
                                    
@@ -89,7 +89,7 @@ server = function(input, output, session) {
         }
         
         pal <- c("red","green")
-        reactiondataintens = FetchDatas(conditionLists = var,option = "TimeStamp, Email, Intens, ReactionTime, Modal", tablename = "reactiontime")
+        reactiondataintens = FetchDatas(conditionLists = var,option = "TimeStamp, Email, Intens, ReactionTime, Modal", tablename = "v_reactiontime")
         reactiondataintens$ReactionTimeRounded = round(reactiondataintens$ReactionTime, digits=-1)
         
         output$plot1 <- renderPlotly(plot_ly(reactiondataintens ,x = ~reactiondataintens$Intens, y = ~ reactiondataintens$ReactionTimeRounded)%>% 
