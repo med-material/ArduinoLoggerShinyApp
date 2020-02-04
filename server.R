@@ -59,7 +59,7 @@ server = function(input, output, session) {
 
                                    
                                    if(input$Alldatacheck){
-                                     output$plot1 <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
+                                     output$movementTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
                                                                   add_trace(type = 'scatter', mode='lines+markers', name = ~Modal , color = ~Modal , colors = pal, split = ~TimeStamp)%>%
                                                                   add_trace(data = varbound, type = 'scatter', mode='lines',fill = 'tonexty',fillcolor='rgba(0,100,80,0.2)', line = list(color = 'transparent'), color = "grey")%>%
                                                                   layout(xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
@@ -68,7 +68,7 @@ server = function(input, output, session) {
       
       
       else {
-        output$plot1 <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
+        output$movementTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
                                        add_trace(type = 'scatter', mode='lines+markers', name = ~Modal , color = ~Modal , colors = pal, split = ~TimeStamp)%>%
                                       layout(xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
       }
