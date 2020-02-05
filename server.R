@@ -53,9 +53,9 @@ server = function(input, output, session) {
   #create confidence intervals for each condition ((Intens x Modal))
   dfmci<-summarySE(data = dfmed, measurevar = "median", groupvars = c("Intens","Modal"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
   #pair up the confidence intervals and medians with the means
-  dfrt_violin<-merge(dfm,dfmci)
+  dfrt_intensity<-merge(dfm,dfmci)
   dodge<-position_dodge(width=0.9)
-  ggviolinplot <- ggplot(dfrt_violin,
+  ggintensityplot <- ggplot(dfrt_intensity,
                   aes(Intens,mean,group=Modal, color=Modal)) +
                   geom_point(data=current_dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
                   geom_point(aes(group=Modal),position=dodge) +
@@ -65,7 +65,7 @@ server = function(input, output, session) {
                   theme(legend.title=element_blank()) +
                   ylab("Movement Time (ms)") + 
                   xlab("Intensity")
-  output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggviolinplot))
+  output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot))
 
     
 observeEvent(input$Param, {    
