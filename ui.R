@@ -15,12 +15,11 @@ ui <- fluidPage(
            )
     )
   ),
-  strong("CHOOSE EXERCISE"),
   tabsetPanel(id = "tabs", type = "tabs",
     tabPanel(id = "reactpan", strong("ReactionTime"),
         navlistPanel(
           widths = c(4, 8),
-          "Choose Visualization",
+          "Choose Visualization:",
           tabPanel("Reaction Time per Trial",
               plotlyOutput("rtTrialPlot"),
           ),

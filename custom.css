@@ -14,3 +14,8 @@ footer {
 .tab-content > .active {
     margin-top: 3em;
 }
+
+.navbar-brand {
+    font-size: 12px;
+    padding: 15px 0px;
+}
