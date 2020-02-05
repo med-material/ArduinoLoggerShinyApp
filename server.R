@@ -9,22 +9,22 @@ server = function(input, output, session) {
   observeEvent({input$tabs},{
     print(input$tabs)
     if(input$tabs == "<strong>ReactionTime</strong>"){
-      updateSelectInput(session , "emailSelect", choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email" , tablename = "v_reactiontime"))
+      updateSelectInput(session , "emailSelect", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Email" , tablename = "v_reactiontime"))
      
     }
     else if(input$tabs == "<strong>SynchTime</strong>"){
-      updateSelectInput(session , "emailSelect", choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Email", tablename = "synch"))
+      updateSelectInput(session , "emailSelect", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Email", tablename = "synch"))
     }
     observeEvent({input$emailSelect} ,{
       if (input$emailSelect != -1){
       varparam = list(list(paste("Email = '", input$emailSelect,"'", sep = "")))
-      updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Comment", tablename = "synch", conditions = varparam))
+      updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Comment", tablename = "synch", conditions = varparam))
       show(id = "synchAlldatacheck", anim = TRUE, animType = "slide", time = 0.5,
            selector = NULL)
       updateCheckboxInput(session, "synchAlldatacheck", value = FALSE)
       }
       else if (input$emailSelect == -1) {
-        updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "All test", text = "", fieldName = "Comment", tablename = "synch"))
+        updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Comment", tablename = "synch"))
         hide(id = "synchAlldatacheck", anim = TRUE, animType = "slide", time = 0.5,
              selector = NULL)
         updateCheckboxInput(session, "synchAlldatacheck", value = FALSE)
