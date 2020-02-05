@@ -3,7 +3,6 @@ library(plyr)
 library(ggplot2)
 
 my_data <- read.csv("credentials.csv", header=TRUE,sep=",", colClasses=c("character","character","character","character"))
-print(my_data[1, "host"])
 
 lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 
@@ -17,6 +16,9 @@ mydb = dbConnect(MySQL(),
                  host=my_data[1, "host"])
 
 
+rs = dbSendQuery(mydb, "SELECT * FROM v_reactiontime")
+D<- fetch(rs, n=-1);
+dbClearResult(dbListResults(mydb)[[1]])
 
 FetchDatas <- function(conditionLists = list(), option = "*" , tablename="v_reactiontime")
 {
