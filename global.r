@@ -2,6 +2,7 @@ library(RMySQL)
 library(plyr)
 library(ggplot2)
 
+
 my_data <- read.csv("credentials.csv", header=TRUE,sep=",", colClasses=c("character","character","character","character"))
 
 lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
@@ -17,7 +18,7 @@ mydb = dbConnect(MySQL(),
 
 
 # RETREIVE REACTION TIME DATA
-rs = dbSendQuery(mydb, "SELECT * FROM v_reactiontime")
+rs = dbSendQuery(mydb, "SELECT * FROM reactiontime")
 dfrt<- fetch(rs, n=-1);
 dbClearResult(dbListResults(mydb)[[1]])
 
@@ -25,6 +26,18 @@ dbClearResult(dbListResults(mydb)[[1]])
 dfrt$Intens<-as.factor(dfrt$Intens)
 dfrt$Intens<-factor(dfrt$Intens,levels = c("Low", "High"))
 dfrt$ReactionTimeRounded = round(dfrt$ReactionTime, digits=-1)
+
+# RETREIVE SYNCH TIME DATA
+rs = dbSendQuery(mydb, "SELECT * FROM synch")
+dfsynch<- fetch(rs, n=-1);
+dbClearResult(dbListResults(mydb)[[1]])
+
+# REFACTOR COLUMNS
+dfsynch$Intens<-as.factor(dfsynch$Intens)
+dfsynch$Intens<-factor(dfsynch$Intens,levels = c("Low", "High"))
+dfsynch$Modal<-as.factor(dfsynch$Modal)
+dfsynch$MusicalAbility<-as.factor(dfsynch$MusicalAbility)
+
 
 FetchDatas <- function(conditionLists = list(), option = "*" , tablename="v_reactiontime")
 {
