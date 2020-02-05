@@ -16,9 +16,14 @@ mydb = dbConnect(MySQL(),
                  host=my_data[1, "host"])
 
 
+# RETREIVE REACTION TIME DATA
 rs = dbSendQuery(mydb, "SELECT * FROM v_reactiontime")
-D<- fetch(rs, n=-1);
+dfrt<- fetch(rs, n=-1);
 dbClearResult(dbListResults(mydb)[[1]])
+
+# REFACTOR COLUMNS
+dfrt$Intens<-as.factor(dfrt$Intens)
+dfrt$Intens<-factor(dfrt$Intens,levels = c("Low", "High"))
 
 FetchDatas <- function(conditionLists = list(), option = "*" , tablename="v_reactiontime")
 {
