@@ -10,3 +10,7 @@ footer {
     display: inline-block;
     margin-top: 20px;
 }
+
+.tab-content > .active {
+    margin-top: 3em;
+}
