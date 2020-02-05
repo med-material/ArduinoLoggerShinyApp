@@ -53,7 +53,7 @@ server = function(input, output, session) {
         updateCheckboxInput(session, "Alldatacheck", value = FALSE)
         }
       
-      pal <- c("red","green")
+      pal <- c("#c94232","#239a37")
       reactiondata = FetchDatas(conditionLists= var , option = "TimeStamp, Email, TrialNo, ReactionTime, Modal", tablename = "v_reactiontime")
       reactiondata$ReactionTimeRounded = round(reactiondata$ReactionTime, digits=-1)
 
@@ -62,15 +62,15 @@ server = function(input, output, session) {
                                      output$movementTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
                                                                   add_trace(type = 'scatter', mode='lines+markers', name = ~Modal , color = ~Modal , colors = pal, split = ~TimeStamp)%>%
                                                                   add_trace(data = varbound, type = 'scatter', mode='lines',fill = 'tonexty',fillcolor='rgba(0,100,80,0.2)', line = list(color = 'transparent'), color = "grey")%>%
-                                                                  layout(xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
+                                                                  layout(showlegend = FALSE, xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
                                       
                                    }
       
       
       else {
         output$movementTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
-                                       add_trace(type = 'scatter', mode='lines+markers', name = ~Modal , color = ~Modal , colors = pal, split = ~TimeStamp)%>%
-                                      layout(xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
+                                       add_trace(type = 'scatter', mode='lines+markers', line = list(width = 1.5), name = ~Modal , color = ~Modal , colors = pal, split = ~TimeStamp)%>%
+                                      layout(showlegend = FALSE, xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
       }
       
     })
@@ -94,7 +94,7 @@ server = function(input, output, session) {
         
         output$plot1 <- renderPlotly(plot_ly(reactiondataintens ,x = ~reactiondataintens$Intens, y = ~ reactiondataintens$ReactionTimeRounded)%>% 
                                     add_trace(type = 'scatter', mode='markers', name = ~Modal,  color = ~Modal , colors = pal,split = ~TimeStamp)%>%
-                                    layout(xaxis = list(title = "Intensity"), yaxis = list(title = "Reaction Time (ms)")))          
+                                    layout(showlegend = FALSE, xaxis = list(title = "Intensity"), yaxis = list(title = "Reaction Time (ms)")))          
         
       })
     }
