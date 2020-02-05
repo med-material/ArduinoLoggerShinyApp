@@ -39,8 +39,8 @@ server = function(input, output, session) {
     current_dfsynch = dfsynch
   }
   output$rtTrialPlot <- renderPlotly(plot_ly(current_dfrt, x = ~current_dfrt$TrialNo, y = ~current_dfrt$ReactionTimeRounded) %>% 
-                                     add_trace(type = 'scatter', mode='lines+markers', line = list(width = 1.5), name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
-                                     layout(showlegend = FALSE, xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
+                                     add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
+                                     layout(showlegend = FALSE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")))
   # IMPROVED INTENSITY PLOT.
   #get medians of each participant per group (Intens x Modal)
   dfmed<-current_dfrt%>%group_by(Email, Intens, Modal)%>%summarise(median=median(ReactionTime))
@@ -61,7 +61,8 @@ server = function(input, output, session) {
                   theme_bw() +
                   theme(legend.title=element_blank()) +
                   ylab("Movement Time (ms)") + 
-                  xlab("Intensity")
+                  xlab("Intensity") +
+                  ylim(0,500)
   output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot))
     
   observeEvent(input$Param, {
