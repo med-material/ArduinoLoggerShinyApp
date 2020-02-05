@@ -1,4 +1,5 @@
 library(plyr)
+library(Rmisc)
 
 server = function(input, output, session) {
   
@@ -43,9 +44,28 @@ server = function(input, output, session) {
   output$rtTrialPlot <- renderPlotly(plot_ly(current_dfrt, x = ~current_dfrt$TrialNo, y = ~current_dfrt$ReactionTimeRounded) %>% 
                                      add_trace(type = 'scatter', mode='lines+markers', line = list(width = 1.5), name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
                                      layout(showlegend = FALSE, xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
-  output$rtIntensityPlot <- renderPlotly(plot_ly(current_dfrt ,x = ~current_dfrt$Intens, y = ~ current_dfrt$ReactionTimeRounded)%>% 
-                                           add_trace(type = 'scatter', mode='markers', name = ~Modal,  color = ~Modal , colors = colorPalette,split = ~TimeStamp)%>%
-                                           layout(showlegend = FALSE, xaxis = list(title = "Intensity"), yaxis = list(title = "Reaction Time (ms)")))
+  # IMPROVED INTENSITY PLOT.
+  #get medians of each participant per group (Intens x Modal)
+  dfmed<-current_dfrt%>%group_by(Email, Intens, Modal)%>%summarise(median=median(ReactionTime))
+  #create means of medians by group (Intens x Modal)
+  dfm<-dfmed%>%group_by(Intens, Modal)%>%summarise(mean=mean(median))
+  #dfmc<-dfmed%>%group_by(Intens, Modal)%>%count
+  #create confidence intervals for each condition ((Intens x Modal))
+  dfmci<-summarySE(data = dfmed, measurevar = "median", groupvars = c("Intens","Modal"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+  #pair up the confidence intervals and medians with the means
+  dfrt_violin<-merge(dfm,dfmci)
+  dodge<-position_dodge(width=0.9)
+  ggviolinplot <- ggplot(dfrt_violin,
+                  aes(Intens,mean,group=Modal, color=Modal)) +
+                  geom_point(data=current_dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
+                  geom_point(aes(group=Modal),position=dodge) +
+                  geom_errorbar(aes(ymin = median-ci, ymax = median+ci),width=0.2 ,position = dodge) +
+                  geom_line(position = dodge) +
+                  theme_bw() +
+                  theme(legend.title=element_blank()) +
+                  ylab("Movement Time (ms)") + 
+                  xlab("Intensity")
+  output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggviolinplot))
 
     
 observeEvent(input$Param, {    
