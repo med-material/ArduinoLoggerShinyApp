@@ -20,6 +20,7 @@ server = function(input, output, session) {
       if (input$emailSelect != -1){
       varparam = list(list(paste("Email = '", input$emailSelect,"'", sep = "")))
       updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment", tablename = "synch", conditions = varparam))
+      
       }
       else if (input$emailSelect == -1) {
         updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment", tablename = "synch"))
@@ -77,6 +78,22 @@ server = function(input, output, session) {
                              theme_minimal() +
                              theme(legend.title=element_blank(), plot.title=element_blank())
   output$synchViolinPlot <- renderPlotly(ggplotly(p = ggsynchViolinPlot))
+  
+  # SYNCH ABILITY VS MUSICAL ABILITY PLOT
+  HighMA<-dfsynch_filtered[dfsynch_filtered$synchdataLED.MusicalAbility == 'High',]
+  LowMA<-dfsynch_filtered[dfsynch_filtered$synchdataLED.MusicalAbility == 'Low',]
+  if ((dim(HighMA)[1] != 0)) {
+  output$synchHighMAPlot <- renderPlotly(plot_ly(dfsynch_filtered,x = ~HighMA$ReactionTimeRounded, y = ~HighMA$freq) %>%
+                                 add_trace(type = 'bar',name = ~HighMA$Modal,  color = ~HighMA$Modal , colors = colorPalette) %>% 
+                                 layout(title = "High MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Amount")))
+  }
+  if ((dim(LowMA)[1] != 0)) {
+  output$synchLowMAPlot <- renderPlotly(plot_ly(dfsynch_filtered,x = ~LowMA$ReactionTimeRounded, y = ~LowMA$freq)%>%
+                                 add_trace(type = 'bar',name = ~LowMA$Modal,color = ~LowMA$Modal , colors = colorPalette) %>% 
+                                 layout(title = "Low MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Amount")))
+  }
+  
+    
   })
     
   })

@@ -38,7 +38,8 @@ ui <- fluidPage(
                         selectInput("Param", NULL, choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment" , tablename = "synch")),
                ),
                tabPanel("Synchronization based on MusicalAbility",
-                        plotlyOutput("synchMAPlot"),
+                        plotlyOutput("synchHighMAPlot"),
+                        plotlyOutput("synchLowMAPlot"),
                         p("Filter data:"),
                         selectInput("Param", NULL, choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment" , tablename = "synch")),
                )
