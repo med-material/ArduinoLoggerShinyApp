@@ -1,5 +1,6 @@
 library(plyr)
 library(Rmisc)
+library(reshape2)
 
 server = function(input, output, session) {
   
@@ -18,16 +19,10 @@ server = function(input, output, session) {
     observeEvent({input$emailSelect} ,{
       if (input$emailSelect != -1){
       varparam = list(list(paste("Email = '", input$emailSelect,"'", sep = "")))
-      updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Comment", tablename = "synch", conditions = varparam))
-      show(id = "synchAlldatacheck", anim = TRUE, animType = "slide", time = 0.5,
-           selector = NULL)
-      updateCheckboxInput(session, "synchAlldatacheck", value = FALSE)
+      updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment", tablename = "synch", conditions = varparam))
       }
       else if (input$emailSelect == -1) {
-        updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Comment", tablename = "synch"))
-        hide(id = "synchAlldatacheck", anim = TRUE, animType = "slide", time = 0.5,
-             selector = NULL)
-        updateCheckboxInput(session, "synchAlldatacheck", value = FALSE)
+        updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment", tablename = "synch"))
       }
     })
   })
@@ -37,9 +32,10 @@ server = function(input, output, session) {
   print(input$emailSelect)
   if (input$emailSelect != -1){
     current_dfrt = dfrt %>% filter(Email == input$emailSelect)
-    summary(current_dfrt)
+    current_dfsynch = dfsynch %>% filter(Email == input$emailSelect)
   } else {
     current_dfrt = dfrt
+    current_dfsynch = dfsynch
   }
   output$rtTrialPlot <- renderPlotly(plot_ly(current_dfrt, x = ~current_dfrt$TrialNo, y = ~current_dfrt$ReactionTimeRounded) %>% 
                                      add_trace(type = 'scatter', mode='lines+markers', line = list(width = 1.5), name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
@@ -66,51 +62,22 @@ server = function(input, output, session) {
                   ylab("Movement Time (ms)") + 
                   xlab("Intensity")
   output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot))
-
     
-observeEvent(input$Param, {    
-  observeEvent(input$showled,{
-    observeEvent(input$showerm, {
-    #plot if led is checked
-    if (input$emailSelect != -1){
-      var1<-contage[contage$synchdataLED.Email == input$emailSelect & contage$synchdataLED.MusicalAbility == 'High',]
-      var2<-contage[contage$synchdataLED.Email == input$emailSelect & contage$synchdataLED.MusicalAbility == 'Low',]
-
-
-      output$plot2 <- renderPlotly(plot_ly(contage,x = ~var1$synchdataLED.ReactionTimeRounded, y = ~var1$freq)%>%
-                                     add_trace(type = 'bar',name = ~var1$synchdataLED.Modal,  color = ~var1$synchdataLED.Modal , colors = colorPalette)%>% 
-                                    layout(title = "Has MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Diversity")))
-      output$plot3 <- renderPlotly(plot_ly(contage,x = ~var2$synchdataLED.ReactionTimeRounded, y = ~var2$freq)%>%
-                                     add_trace(type = 'bar',name = ~var2$synchdataLED.Modal,color = ~var2$synchdataLED.Modal , colors = colorPalette) %>% 
-                                     layout(title = "Has No MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Diversity")))
-    }
-    
-    else{
-      var1<-contage[contage$synchdataLED.MusicalAbility == 'High',]
-      var2<-contage[contage$synchdataLED.MusicalAbility == 'Low',]
-
-      output$plot2 <- renderPlotly(plot_ly(contage,x = ~var1$synchdataLED.ReactionTimeRounded, y = ~var1$freq)%>%
-                                     add_trace(type = 'bar',name = ~var1$synchdataLED.Modal,color = ~var1$synchdataLED.Modal , colors = colorPalette)%>% 
-                                  layout(title = "Has MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Diversity")))
-      output$plot3 <- renderPlotly(plot_ly(contage,x = ~var2$synchdataLED.ReactionTimeRounded, y = ~var2$freq)%>%
-                                     add_trace(type = 'bar',name = ~var2$synchdataLED.Modal,color = ~var2$synchdataLED.Modal , colors = colorPalette)%>% 
-                                     layout(title = "Has No MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Diversity")))
-    }
-    
-    if (input$Param !=-1){
-      var1<-contage[contage$synchdataLED.MusicalAbility == 'High' & contage$synchdataLED.Comment == input$Param,]
-      var2<-contage[contage$synchdataLED.MusicalAbility == 'Low' & contage$synchdataLED.Comment == input$Param,]
-
-      output$plot2 <- renderPlotly(plot_ly(contage,x = ~var1$synchdataLED.ReactionTimeRounded, y = ~var1$freq)%>%
-                                     add_trace(type = 'bar',name = ~var1$synchdataLED.Modal,color = ~var1$synchdataLED.Modal , colors = colorPalette)%>% 
-                                     layout(title = "Has MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Diversity")))
-      output$plot3 <- renderPlotly(plot_ly(contage,x = ~var2$synchdataLED.ReactionTimeRounded, y = ~var2$freq)%>%
-                                     add_trace(type = 'bar',name = ~var2$synchdataLED.Modal,color = ~var2$synchdataLED.Modal , colors = colorPalette)%>% 
-                                     layout(title = "Has No MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Diversity")))
-    } 
-})
-})
-})
+  observeEvent(input$Param, {
+  
+  # SYNCH ABILITY VS INTENSITY PLOT
+  dfsynch_filtered = current_dfsynch[!is.na(dfsynch$ReactionTime),]
+  ggsynchViolinPlot = ggplot(dfsynch_filtered,
+                             aes(Intens,ReactionTime,fill=Modal)) +
+                             geom_violin() +
+                             facet_wrap(vars(MusicalAbility)) +
+                             geom_point(data=dfsynch_filtered,aes(Intens,ReactionTime,fill=Modal),alpha=0.2,position= position_jitterdodge()) +
+                             xlab("Intensity") +
+                             ylab("Synch Offset (ms)") +
+                             theme_minimal() +
+                             theme(legend.title=element_blank(), plot.title=element_blank())
+  output$synchViolinPlot <- renderPlotly(ggplotly(p = ggsynchViolinPlot))
+  })
     
   })
 }

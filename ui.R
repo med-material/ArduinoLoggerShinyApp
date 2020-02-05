@@ -28,21 +28,22 @@ ui <- fluidPage(
           )
         )
     ),
-    tabPanel(id = "synchtab",title = strong("SynchTime"),
-      sidebarPanel( 
-        p("choose parameter"),
-        selectInput("Param", NULL,
-                    choices = GenerateSelectChoices(default = "No Comment", text = "", fieldName = "Comment" , tablename = "synch")),
-        checkboxInput("showled", "Show LED Data", value = TRUE),
-        checkboxInput("showerm", "Show ERM Data", value = TRUE),
-        checkboxInput("synchAlldatacheck", "Compare To Everyone's Data", value = FALSE),
-      ),
-    
-      mainPanel(
-        #Output: Histogram ----
-        plotlyOutput("plot2"),
-        plotlyOutput("plot3"),
-      )
+    tabPanel(id = "synchpan", strong("SynchTime"),
+             navlistPanel(
+               widths = c(4, 8),
+               "Choose Visualization:",
+               tabPanel("Synchronization based on Intensity",
+                        plotlyOutput("synchViolinPlot"),
+                        p("Filter data:"),
+                        selectInput("Param", NULL, choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment" , tablename = "synch")),
+               ),
+               tabPanel("Synchronization based on MusicalAbility",
+                        plotlyOutput("synchMAPlot"),
+                        p("Filter data:"),
+                        selectInput("Param", NULL, choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment" , tablename = "synch")),
+               )
+             ),
+
     ),
     tabPanel(strong("Physiological Data"),
       tableOutput("table")
