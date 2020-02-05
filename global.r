@@ -24,11 +24,12 @@ dbClearResult(dbListResults(mydb)[[1]])
 # REFACTOR COLUMNS
 dfrt$Intens<-as.factor(dfrt$Intens)
 dfrt$Intens<-factor(dfrt$Intens,levels = c("Low", "High"))
+dfrt$ReactionTimeRounded = round(dfrt$ReactionTime, digits=-1)
 
 FetchDatas <- function(conditionLists = list(), option = "*" , tablename="v_reactiontime")
 {
   queryString = GenerateQuery(conditionLists, option, tablename)
-  print(dbGetQuery(mydb, queryString))
+  #print(dbGetQuery(mydb, queryString))
   return(dbGetQuery(mydb, queryString))
 }
 
@@ -53,7 +54,7 @@ GenerateQuery <- function(conditionLists, option , tablename)
   
   if (length(conditionLists) == 0)
   {
-    print(queryString)
+    #print(queryString)
     return(queryString)
   }
   
@@ -77,7 +78,7 @@ GenerateQuery <- function(conditionLists, option , tablename)
       queryString = paste(queryString, listLink, sep = " ")
     }
   }
-  print(queryString)
+  #print(queryString)
   return(queryString)
 }
 
@@ -114,11 +115,11 @@ GenerateSelectChoices <- function(default = "", text = "", fieldName, conditions
       extraText <- list()
       for(j in 1:length(extraInfo))
       {
-        print(j)
+        #print(j)
         tempContitions <- conditions
         tempContitions[[length(tempContitions) + 1]] <- paste(toString(fieldName), " = ", fieldList[[i]], sep = "")
         extraText[[j]] <- GetField(extraInfo[[j]], FetchDatas(tempContitions, paste("DISTINCT", extraInfo[[j]])))[[1]]
-        print("test")
+        #print("test")
       }
       
       

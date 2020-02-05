@@ -17,40 +17,37 @@ ui <- fluidPage(
   ),
   strong("CHOOSE EXERCISE"),
   tabsetPanel(id = "tabs", type = "tabs",
-        tabPanel(id = "reactpan", strong("ReactionTime"),
-          sidebarPanel( 
-            p("CHOOSE VISUALIZATION"),
-            div(class="box", radioButtons("visual", NULL,
-                c("Reaction Time per Trial" = "radio1",
-                  "Reaction Time based on Itensity" = "radio2"))),
-            disabled(checkboxInput("Alldatacheck", "Compare To Everyone's Data", value = FALSE)),
-          ), 
-          
-          mainPanel(
-            # Output: Histogram ----
-            plotlyOutput("reactionTimePlot"),
-          )
-        ),
-      
-        tabPanel(id = "synchtab",title = strong("SynchTime"),
-          sidebarPanel( 
-            p("choose parameter"),
-            selectInput("Param", NULL,
-                        choices = GenerateSelectChoices(default = "No Comment", text = "", fieldName = "Comment" , tablename = "synch")),
-            checkboxInput("showled", "Show LED Data", value = TRUE),
-            checkboxInput("showerm", "Show ERM Data", value = TRUE),
-            checkboxInput("synchAlldatacheck", "Compare To Everyone's Data", value = FALSE),
+    tabPanel(id = "reactpan", strong("ReactionTime"),
+        navlistPanel(
+          widths = c(4, 8),
+          "Choose Visualization",
+          tabPanel("Reaction Time per Trial",
+              plotlyOutput("rtTrialPlot"),
           ),
-        
-          mainPanel(
-            #Output: Histogram ----
-            plotlyOutput("plot2"),
-            plotlyOutput("plot3"),
+          tabPanel("Reaction Time based on Intensity",
+              plotlyOutput("rtIntensityPlot"),
           )
-        ),
-        tabPanel(strong("Physiological Data"),
-          tableOutput("table")
         )
+    ),
+    tabPanel(id = "synchtab",title = strong("SynchTime"),
+      sidebarPanel( 
+        p("choose parameter"),
+        selectInput("Param", NULL,
+                    choices = GenerateSelectChoices(default = "No Comment", text = "", fieldName = "Comment" , tablename = "synch")),
+        checkboxInput("showled", "Show LED Data", value = TRUE),
+        checkboxInput("showerm", "Show ERM Data", value = TRUE),
+        checkboxInput("synchAlldatacheck", "Compare To Everyone's Data", value = FALSE),
+      ),
+    
+      mainPanel(
+        #Output: Histogram ----
+        plotlyOutput("plot2"),
+        plotlyOutput("plot3"),
+      )
+    ),
+    tabPanel(strong("Physiological Data"),
+      tableOutput("table")
+    )
   ),
   tags$footer()
 )
