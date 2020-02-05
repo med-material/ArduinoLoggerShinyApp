@@ -60,7 +60,7 @@ server = function(input, output, session) {
                   geom_line(position = dodge) +
                   theme_bw() +
                   theme(legend.title=element_blank()) +
-                  ylab("Movement Time (ms)") + 
+                  ylab("Reaction Time (ms)") + 
                   xlab("Intensity") +
                   ylim(0,500)
   output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot))
