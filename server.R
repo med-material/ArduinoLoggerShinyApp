@@ -29,7 +29,7 @@ server = function(input, output, session) {
         updateCheckboxInput(session, "synchAlldatacheck", value = FALSE)
       }
     })
-    })
+  })
   
   
   observeEvent({input$emailSelect},{
@@ -61,14 +61,14 @@ server = function(input, output, session) {
 
                                    
      if(input$Alldatacheck){
-       output$movementTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
+       output$reactionTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
         add_trace(type = 'scatter', mode='lines+markers', name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
         add_trace(data = varbound, type = 'scatter', mode='lines',fill = 'tonexty',fillcolor='rgba(0,100,80,0.2)', line = list(color = 'transparent'), color = "grey")%>%
         layout(showlegend = FALSE, xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
         
      }
      else {
-      output$movementTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
+      output$reactionTimePlot <- renderPlotly(plot_ly(reactiondata, x = ~reactiondata$TrialNo, y = ~reactiondata$ReactionTimeRounded)%>% 
        add_trace(type = 'scatter', mode='lines+markers', line = list(width = 1.5), name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
       layout(showlegend = FALSE, xaxis = list(title = "Trial Number"), yaxis = list(title = "Reaction Time (ms)")))
       }
@@ -91,7 +91,7 @@ server = function(input, output, session) {
         reactiondataintens = FetchDatas(conditionLists = var,option = "TimeStamp, Email, Intens, ReactionTime, Modal", tablename = "v_reactiontime")
         reactiondataintens$ReactionTimeRounded = round(reactiondataintens$ReactionTime, digits=-1)
         
-        output$plot1 <- renderPlotly(plot_ly(reactiondataintens ,x = ~reactiondataintens$Intens, y = ~ reactiondataintens$ReactionTimeRounded)%>% 
+        output$movementTimePlot <- renderPlotly(plot_ly(reactiondataintens ,x = ~reactiondataintens$Intens, y = ~ reactiondataintens$ReactionTimeRounded)%>% 
                                     add_trace(type = 'scatter', mode='markers', name = ~Modal,  color = ~Modal , colors = colorPalette,split = ~TimeStamp)%>%
                                     layout(showlegend = FALSE, xaxis = list(title = "Intensity"), yaxis = list(title = "Reaction Time (ms)")))          
         

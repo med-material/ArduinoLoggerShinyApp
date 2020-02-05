@@ -28,7 +28,7 @@ ui <- fluidPage(
           
           mainPanel(
             # Output: Histogram ----
-            plotlyOutput("movementTimePlot"),
+            plotlyOutput("reactionTimePlot"),
           )
         ),
       
