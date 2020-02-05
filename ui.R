@@ -47,7 +47,7 @@ ui <- fluidPage(
 
     ),
     tabPanel(strong("Physiological Data"),
-      tableOutput("table")
+      p("Coming soon..")
     )
   ),
   tags$footer()
