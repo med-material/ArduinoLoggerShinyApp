@@ -30,20 +30,14 @@ server = function(input, output, session) {
   
   
   observeEvent({input$emailSelect},{
+  RefreshDataSets(input$emailSelect)
   print(input$emailSelect)
-  if (input$emailSelect != -1){
-    current_dfrt = dfrt %>% filter(Email == input$emailSelect)
-    current_dfsynch = dfsynch %>% filter(Email == input$emailSelect)
-  } else {
-    current_dfrt = dfrt
-    current_dfsynch = dfsynch
-  }
-  output$rtTrialPlot <- renderPlotly(plot_ly(current_dfrt, x = ~current_dfrt$TrialNo, y = ~current_dfrt$ReactionTimeRounded) %>% 
+  output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTimeRounded) %>% 
                                      add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
                                      layout(showlegend = FALSE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")))
   # IMPROVED INTENSITY PLOT.
   #get medians of each participant per group (Intens x Modal)
-  dfmed<-current_dfrt%>%group_by(Email, Intens, Modal)%>%summarise(median=median(ReactionTime))
+  dfmed<-dfrt%>%group_by(Email, Intens, Modal)%>%summarise(median=median(ReactionTime))
   #create means of medians by group (Intens x Modal)
   dfm<-dfmed%>%group_by(Intens, Modal)%>%summarise(mean=mean(median))
   #dfmc<-dfmed%>%group_by(Intens, Modal)%>%count
@@ -54,7 +48,7 @@ server = function(input, output, session) {
   dodge<-position_dodge(width=0.9)
   ggintensityplot <- ggplot(dfrt_intensity,
                   aes(Intens,mean,group=Modal, color=Modal)) +
-                  geom_point(data=current_dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
+                  geom_point(data=dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
                   geom_point(aes(group=Modal),position=dodge) +
                   geom_errorbar(aes(ymin = median-ci, ymax = median+ci),width=0.2 ,position = dodge) +
                   geom_line(position = dodge) +
@@ -68,7 +62,7 @@ server = function(input, output, session) {
   observeEvent(input$Param, {
   
   # SYNCH ABILITY VS INTENSITY PLOT
-  dfsynch_filtered = current_dfsynch[!is.na(dfsynch$ReactionTime),]
+  dfsynch_filtered = dfsynch[!is.na(dfsynch$ReactionTime),]
   ggsynchViolinPlot = ggplot(dfsynch_filtered,
                              aes(Intens,ReactionTime,fill=Modal)) +
                              geom_violin() +

@@ -16,28 +16,51 @@ mydb = dbConnect(MySQL(),
                  dbname=my_data[1, "dbname"],
                  host=my_data[1, "host"])
 
+# RetreiveDataSet() Used to query for a specific dataset. 
+# Setting colvalue to NULL retreives all data.
+# USAGE:
+#dtest = RetreiveDataSet("reactiontime","Email","mhel@create.aau.dk")
+RetreiveDataSet <- function(tablename, column, colvalue) {
+  queryString = "SELECT *"
+  queryString = paste(queryString, "FROM",tablename, sep = " ")
+  if (colvalue != "-1") {
+    queryString = paste(queryString, "WHERE",column,"= ",sep=" ")
+    queryString = paste(queryString,"\'",colvalue,"\'",sep="")
+  }
+  print(queryString)
+  res = dbSendQuery(mydb, queryString)
+  df = fetch(res, n=-1)
+  dbClearResult(dbListResults(mydb)[[1]])
+  return(df)
+}
 
-# RETREIVE REACTION TIME DATA
-rs = dbSendQuery(mydb, "SELECT * FROM reactiontime")
-dfrt<- fetch(rs, n=-1);
-dbClearResult(dbListResults(mydb)[[1]])
+# RefreshDataSet is a helper function called in the app for refreshing ReactionTime and Synch datasets.
+# Setting colfilter to NULL retreives all data.
+# USAGE:
+# RefreshDataSets("mhel@create.aau.dk")
+RefreshDataSets <- function(colfilter) {
+  # REFRESH REACTION TIME DATASET
+  dfrt<<- RetreiveDataSet("reactiontime","Email",colfilter)
+  dfrt$Intens<<-as.factor(dfrt$Intens)
+  dfrt$Intens<<-factor(dfrt$Intens,levels = c("Low", "High"))
+  dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits=-1)
+  
+  # REFRESH SYNCH DATASET
+  dfsynch <<- RetreiveDataSet("synch","Email",colfilter)
+  dfsynch$Intens<<-as.factor(dfsynch$Intens)
+  dfsynch$Intens<<-factor(dfsynch$Intens,levels = c("Low", "High"))
+  dfsynch$Modal<<-as.factor(dfsynch$Modal)
+  dfsynch$MusicalAbility<<-as.factor(dfsynch$MusicalAbility)  
+}
 
-# REFACTOR COLUMNS
-dfrt$Intens<-as.factor(dfrt$Intens)
-dfrt$Intens<-factor(dfrt$Intens,levels = c("Low", "High"))
-dfrt$ReactionTimeRounded = round(dfrt$ReactionTime, digits=-1)
 
-# RETREIVE SYNCH TIME DATA
-rs = dbSendQuery(mydb, "SELECT * FROM synch")
-dfsynch<- fetch(rs, n=-1);
-dbClearResult(dbListResults(mydb)[[1]])
+dfrt <- data.frame()
+dfsynch <- data.frame()
+#RefreshDataSets(-1)
 
-# REFACTOR COLUMNS
-dfsynch$Intens<-as.factor(dfsynch$Intens)
-dfsynch$Intens<-factor(dfsynch$Intens,levels = c("Low", "High"))
-dfsynch$Modal<-as.factor(dfsynch$Modal)
-dfsynch$MusicalAbility<-as.factor(dfsynch$MusicalAbility)
 
+
+# DEPRECATED FUNCTIONS, WILL REMOVE SOON.
 
 FetchDatas <- function(conditionLists = list(), option = "*" , tablename="v_reactiontime")
 {
