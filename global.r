@@ -40,7 +40,7 @@ all_accounts = unique(c(rt_accounts,synch_accounts))
 RetreiveDataSet <- function(tablename, column, colvalue) {
   queryString = "SELECT *"
   queryString = paste(queryString, "FROM",tablename, sep = " ")
-  if (colvalue != "-1") {
+  if (colvalue != "NA") {
     queryString = paste(queryString, "WHERE",column,"= ",sep=" ")
     queryString = paste(queryString,"\'",colvalue,"\'",sep="")
   }
@@ -56,6 +56,10 @@ RetreiveDataSet <- function(tablename, column, colvalue) {
 # USAGE:
 # RefreshDataSets("mhel@create.aau.dk")
 RefreshDataSets <- function(colfilter) {
+  if (colfilter == "-1") {
+    # -1 is the default value R Shiny uses on startup.
+    return()
+  }
   # REFRESH REACTION TIME DATASET
   dfrt<<- RetreiveDataSet("reactiontime","Email",colfilter)
   dfrt$Intens<<-as.factor(dfrt$Intens)

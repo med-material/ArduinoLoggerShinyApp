@@ -4,17 +4,22 @@ library(reshape2)
 
 
 server = function(input, output, session) {
-  updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "-1"))
+  updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
   
   # define colors to use in plots.
   colorPalette <- c("#c94232","#239a37")
   
   observeEvent({input$emailSelect},{
+  if (input$emailSelect == "-1") {
+    return()
+  }
   RefreshDataSets(input$emailSelect)
-  print(input$emailSelect)
+  
   output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTimeRounded) %>% 
                                      add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
                                      layout(showlegend = FALSE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")))
+  
+  
   # IMPROVED INTENSITY PLOT.
   #get medians of each participant per group (Intens x Modal)
   dfmed<-dfrt%>%group_by(Email, Intens, Modal)%>%summarise(median=median(ReactionTime))
