@@ -4,8 +4,20 @@ library(reshape2)
 
 
 server = function(input, output, session) {
-  updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
-  
+  observe({
+    query <- parseQueryString(session$clientData$url_search)
+    if (!is.null(query[['email']])) {
+      print("this text was in the url string:")
+      print(query[['email']])
+      sel = query[['email']]
+      updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"), selected = sel)
+      #input$emailSelect = sel
+      #updateTextInput(session, "text", value = query[['text']])
+    } else {
+      updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
+    }
+  })  
+
   # define colors to use in plots.
   colorPalette <- c("#c94232","#239a37")
   
@@ -13,6 +25,7 @@ server = function(input, output, session) {
   if (input$emailSelect == "-1") {
     return()
   }
+  print("input-emailselect event")
   RefreshDataSets(input$emailSelect)
   
   output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTimeRounded) %>% 

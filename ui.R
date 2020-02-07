@@ -11,7 +11,7 @@ ui <- fluidPage(
     column(4,
            column(1, style = "margin-top : 20px; text-align: right;", icon("user", class = "fa-2x", lib="font-awesome")),
            column(11,style = "margin-top : 20px; text-align: center;",
-            selectInput("emailSelect", NULL, choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Email", tablename = "synch")),
+            selectInput("emailSelect", NULL, choices="Loading.."),
            )
     )
   ),
