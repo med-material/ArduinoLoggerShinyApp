@@ -16,6 +16,23 @@ mydb = dbConnect(MySQL(),
                  dbname=my_data[1, "dbname"],
                  host=my_data[1, "host"])
 
+# RetreiveUniqueColmnVals() Used to get unique values available for a column
+# USAGE:
+#dtest = RetreiveUniqueColmnVals("Email")
+RetreiveUniqueColVals <- function(tablename, column) {
+  queryString = paste("SELECT DISTINCT",column,"FROM",tablename,sep=" ")
+  res = dbSendQuery(mydb, queryString)
+  vals = fetch(res, n=-1)
+  dbClearResult(dbListResults(mydb)[[1]])
+  return(unlist(vals)) # if there are several values, they arrive as a list, so unlist them on arrival.
+}
+
+rt_accounts = RetreiveUniqueColVals("reactiontime","Email")
+synch_accounts = RetreiveUniqueColVals("synch","Email")
+
+all_accounts = unique(c(rt_accounts,synch_accounts))
+
+
 # RetreiveDataSet() Used to query for a specific dataset. 
 # Setting colvalue to NULL retreives all data.
 # USAGE:

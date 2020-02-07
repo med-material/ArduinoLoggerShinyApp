@@ -2,32 +2,12 @@ library(plyr)
 library(Rmisc)
 library(reshape2)
 
+
 server = function(input, output, session) {
+  updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "-1"))
   
   # define colors to use in plots.
   colorPalette <- c("#c94232","#239a37")
-  
-  observeEvent({input$tabs},{
-    print(input$tabs)
-    if(input$tabs == "<strong>ReactionTime</strong>"){
-      updateSelectInput(session , "emailSelect", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Email" , tablename = "v_reactiontime"))
-     
-    }
-    else if(input$tabs == "<strong>SynchTime</strong>"){
-      updateSelectInput(session , "emailSelect", choices = GenerateSelectChoices(default = "Everyone\'s Data", text = "", fieldName = "Email", tablename = "synch"))
-    }
-    observeEvent({input$emailSelect} ,{
-      if (input$emailSelect != -1){
-      varparam = list(list(paste("Email = '", input$emailSelect,"'", sep = "")))
-      updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment", tablename = "synch", conditions = varparam))
-      
-      }
-      else if (input$emailSelect == -1) {
-        updateSelectInput(session , "Param", choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment", tablename = "synch"))
-      }
-    })
-  })
-  
   
   observeEvent({input$emailSelect},{
   RefreshDataSets(input$emailSelect)
