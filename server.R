@@ -6,15 +6,17 @@ library(reshape2)
 server = function(input, output, session) {
   observe({
     query <- parseQueryString(session$clientData$url_search)
+    # Change E-mail dropdown based on the ?email=XXX URL parameter
     if (!is.null(query[['email']])) {
-      print("this text was in the url string:")
-      print(query[['email']])
       sel = query[['email']]
       updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"), selected = sel)
-      #input$emailSelect = sel
-      #updateTextInput(session, "text", value = query[['text']])
     } else {
       updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
+    }
+    # Change Tab based on the ?subject=XXX URL parameter (based on the tab's value attribute)
+    if (!is.null(query[['subject']])) {
+      subject = query[['subject']]
+      updateTabsetPanel(session, "subjectChooser", selected = "synch")
     }
   })  
 

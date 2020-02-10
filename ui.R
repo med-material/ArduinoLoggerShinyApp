@@ -15,8 +15,8 @@ ui <- fluidPage(
            )
     )
   ),
-  tabsetPanel(id = "tabs", type = "tabs",
-    tabPanel(id = "reactpan", strong("ReactionTime"),
+  tabsetPanel(id = "subjectChooser", type = "tabs",
+    tabPanel(value  = "reactiontime", id = "reactPan", strong("ReactionTime"),
         navlistPanel(
           widths = c(4, 8),
           "Choose Visualization:",
@@ -28,7 +28,7 @@ ui <- fluidPage(
           )
         )
     ),
-    tabPanel(id = "synchpan", strong("SynchTime"),
+    tabPanel(value  = "synch", id = "synchPan", strong("SynchTime"),
              navlistPanel(
                widths = c(4, 8),
                "Choose Visualization:",
@@ -46,7 +46,7 @@ ui <- fluidPage(
              ),
 
     ),
-    tabPanel(strong("Physiological Data"),
+    tabPanel(value = "EDAIBISerial", strong("Physiological Data"),
       p("Coming soon..")
     )
   ),
