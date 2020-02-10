@@ -35,13 +35,13 @@ ui <- fluidPage(
                tabPanel("Synchronization based on Intensity",
                         plotlyOutput("synchViolinPlot"),
                         p("Filter data:"),
-                        selectInput("Param", NULL, choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment" , tablename = "synch")),
+                        selectInput("Param", NULL, choices = c(levels(dfsynch$Comment),"NA")),
                ),
                tabPanel("Synchronization based on MusicalAbility",
                         plotlyOutput("synchHighMAPlot"),
                         plotlyOutput("synchLowMAPlot"),
                         p("Filter data:"),
-                        selectInput("Param", NULL, choices = GenerateSelectChoices(default = "No Filter", text = "", fieldName = "Comment" , tablename = "synch")),
+                        selectInput("Param", NULL, choices = c(levels(dfsynch$Comment),"NA")),
                )
              ),
 
