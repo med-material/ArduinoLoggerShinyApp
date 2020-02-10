@@ -16,7 +16,7 @@ server = function(input, output, session) {
     # Change Tab based on the ?subject=XXX URL parameter (based on the tab's value attribute)
     if (!is.null(query[['subject']])) {
       subject = query[['subject']]
-      updateTabsetPanel(session, "subjectChooser", selected = "synch")
+      updateTabsetPanel(session, "subjectChooser", selected = subject)
     }
   })  
 
