@@ -1,6 +1,7 @@
 library(plyr)
 library(Rmisc)
 library(reshape2)
+library(dplyr)
 
 
 server = function(input, output, session) {
@@ -75,18 +76,22 @@ server = function(input, output, session) {
   output$synchViolinPlot <- renderPlotly(ggplotly(p = ggsynchViolinPlot))
   
   # SYNCH ABILITY VS MUSICAL ABILITY PLOT
-  HighMA<-dfsynch_filtered[dfsynch_filtered$synchdataLED.MusicalAbility == 'High',]
-  LowMA<-dfsynch_filtered[dfsynch_filtered$synchdataLED.MusicalAbility == 'Low',]
-  if ((dim(HighMA)[1] != 0)) {
-  output$synchHighMAPlot <- renderPlotly(plot_ly(dfsynch_filtered,x = ~HighMA$ReactionTimeRounded, y = ~HighMA$freq) %>%
-                                 add_trace(type = 'bar',name = ~HighMA$Modal,  color = ~HighMA$Modal , colors = colorPalette) %>% 
-                                 layout(title = "High MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Amount")))
-  }
-  if ((dim(LowMA)[1] != 0)) {
-  output$synchLowMAPlot <- renderPlotly(plot_ly(dfsynch_filtered,x = ~LowMA$ReactionTimeRounded, y = ~LowMA$freq)%>%
-                                 add_trace(type = 'bar',name = ~LowMA$Modal,color = ~LowMA$Modal , colors = colorPalette) %>% 
-                                 layout(title = "Low MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Amount")))
-  }
+  #dfsynch_music_filtered = dfsynch_filtered[!is.na(dfsynch$MusicalAbility),]
+  #dfsynch_music_filtered$ReactionTimeRounded <<- round(dfsynch_music_filtered$ReactionTime, digits=-1)
+  #dfsynch_music_filtered$freq = count(dfsynch_music_filtered, vars =c("dfsynch_music_filtered$ReactionTimeRounded"))
+  #HighMA<-dfsynch_music_filtered %>% filter(MusicalAbility == "High")
+  #LowMA<-dfsynch_music_filtered %>% filter(MusicalAbility == "Low")
+  #print(LowMA)
+  #if ((dim(HighMA)[1] != 0)) {
+  #output$synchHighMAPlot <- renderPlotly(plot_ly(HighMA,x = ~HighMA$ReactionTimeRounded, y = ~HighMA$freq) %>%
+  #                               add_trace(type = 'bar',name = ~HighMA$Modal,  color = ~HighMA$Modal , colors = colorPalette) %>% 
+  #                               layout(title = "High MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Amount")))
+  #}
+  #if ((dim(LowMA)[1] != 0)) {
+  #output$synchLowMAPlot <- renderPlotly(plot_ly(LowMA, x = ~LowMA$ReactionTimeRounded, y = ~LowMA$freq)%>%
+  #                               add_trace(type = 'bar',name = ~LowMA$Modal,color = ~LowMA$Modal , colors = colorPalette) %>% 
+  #                               layout(title = "Low MusicalAbility", xaxis = list(title = "Reaction Time (ms)"), yaxis = list(title = "Amount")))
+  #}
   
     
   })
