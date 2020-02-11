@@ -31,9 +31,11 @@ server = function(input, output, session) {
   print("input-emailselect event")
   RefreshDataSets(input$emailSelect)
   
-  output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTimeRounded) %>% 
-                                     add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette, split = ~TimeStamp)%>%
-                                     layout(showlegend = FALSE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")))
+  output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTime) %>% 
+                                     add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette) %>%
+                                     layout(showlegend = TRUE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")) %>%
+                                     config(scrollZoom = TRUE)
+                                    )
   
   
   # IMPROVED INTENSITY PLOT.
@@ -58,7 +60,9 @@ server = function(input, output, session) {
                   ylab("Reaction Time (ms)") + 
                   xlab("Intensity") +
                   ylim(0,500)
-  output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot))
+  output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot) %>%
+                                         config(scrollZoom = TRUE)
+                                        )
     
   observeEvent(input$Param, {
   
@@ -73,7 +77,9 @@ server = function(input, output, session) {
                              ylab("Synch Offset (ms)") +
                              theme_minimal() +
                              theme(legend.title=element_blank(), plot.title=element_blank())
-  output$synchViolinPlot <- renderPlotly(ggplotly(p = ggsynchViolinPlot))
+  output$synchViolinPlot <- renderPlotly(ggplotly(p = ggsynchViolinPlot) %>%
+                                         config(scrollZoom = TRUE)
+                                        )
   
   # SYNCH ABILITY VS MUSICAL ABILITY PLOT
   #dfsynch_music_filtered = dfsynch_filtered[!is.na(dfsynch$MusicalAbility),]

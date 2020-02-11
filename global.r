@@ -65,6 +65,7 @@ RefreshDataSets <- function(colfilter) {
   dfrt$Intens<<-as.factor(dfrt$Intens)
   dfrt$Intens<<-factor(dfrt$Intens,levels = c("Low", "High"))
   dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits=-1)
+  dfrt$Modal <<- as.factor(dfrt$Modal)
   
   # REFRESH SYNCH DATASET
   dfsynch <<- RetreiveDataSet("synch","Email",colfilter)
