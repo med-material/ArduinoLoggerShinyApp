@@ -15,6 +15,9 @@ ui <- fluidPage(
            )
     )
   ),
+  fluidRow(
+    column(12, checkboxGroupInput("pidChooser", label = "Loading...", choices = NULL, inline = TRUE))
+  ),
   tabsetPanel(id = "subjectChooser", type = "tabs",
     tabPanel(value  = "reactiontime", id = "reactPan", strong("ReactionTime"),
         navlistPanel(

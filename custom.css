@@ -19,3 +19,59 @@ footer {
     font-size: 12px;
     padding: 15px 0px;
 }
+
+/* Styling of Check-boxes :horizontal */
+.checkbox-inline, .radio-inline {
+    padding: 0;
+    padding-top: 5px;
+}
+
+.checkbox-inline + .checkbox-inline {
+  margin-left: 0;
+}
+.form-group input[type="checkbox"] {
+    display: none;
+}
+
+.form-group input[type="checkbox"] ~span {
+    background: #D1D3D4;
+    border-radius: 3px 3px 3px 3px;
+    color: #888;
+    border: 1px solid #D1D3D4;
+}
+
+.form-group input[type="checkbox"]:checked ~span {
+    color: #fff;
+    background-color: #337ab7;
+    border: 1px solid #337ab7;
+}
+
+.form-group input[type="checkbox"]:hover ~span {
+    border: 1px solid #666;
+    background-color: #4d8fcd;
+}
+
+.form-group input[type="checkbox"]:hover:not(:checked) ~span {
+    color: #666;
+    border: 1px solid #888;
+    background-color: #bbbdbe;
+}
+
+.checkbox-inline span {
+    display: inline-block;
+    width: 40px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+}
+
+label {
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+#pidChooser {
+    text-align: right;
+    margin-right: 25px;
+}
