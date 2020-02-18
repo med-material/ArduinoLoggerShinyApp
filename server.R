@@ -2,6 +2,7 @@ library(plyr)
 library(Rmisc)
 library(reshape2)
 library(dplyr)
+library(tidyr)
 
 server = function(input, output, session) {
   
@@ -12,13 +13,18 @@ server = function(input, output, session) {
   
   # a variable we use, if we filter based on pid.
   pid_selection <- NULL
+  pid_email <- NULL
   pid_query <- NULL
+  
+  # a variable we use to keep track of the currently available participants
+  participants <- NULL
   
   observe({
     query <- parseQueryString(session$clientData$url_search)
     # Change E-mail dropdown based on the ?email=XXX URL parameter
     if (!is.null(query[['email']])) {
       sel = query[['email']]
+      pid_email = query[['email']]
       updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"), selected = sel)
     } else {
       updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
@@ -37,6 +43,7 @@ server = function(input, output, session) {
     }
   })
   observeEvent(ignoreNULL=FALSE, {input$pidChooser}, {
+    print(input$emailSelect)
     # prevent infinite loop - only update pid_selection to null, if the value is not already null.
     if (is.null(pid_selection) & is.null(input$pidChooser)) {
       return()
@@ -46,25 +53,39 @@ server = function(input, output, session) {
     if (!is.null(pid_query)) {
       pid_selection <<- pid_query
       pid_query <<- NULL
+    } else if (!is.null(input$pidChooser)) {
+      pid_selection <<- unlist(participants[input$pidChooser,"PID"])
+      pid_email <<- unlist(participants[input$pidChooser,"Email"])
     } else {
-      pid_selection <<- input$pidChooser
+      pid_selection <<- NULL
+      pid_email <<- NULL
     }
-    print(pid_selection)
+    print(paste("pid_selection",pid_selection))
+    print(paste("pid_email",pid_email))
     UpdateVisualizations()
   })
   observeEvent({input$emailSelect},{
     if (input$emailSelect == "-1") {
       return()
     }
+    print(input$emailSelect)
     RefreshDataSets(input$emailSelect)
-    
+
     # Update PID Choosers to show PID numbers based on the data
-    participants = unique(c(dfrt$PID,dfsynch$PID))
+    participants <<- unique(rbind(dfrt %>% group_by(Email) %>% distinct(PID), dfsynch %>% group_by(Email) %>% distinct(PID)))
+    #pid_by_email = c(dfrt %>% group_by(Email) %>% distinct(PID), dfsynch %>% group_by(Email) %>% distinct(PID))
+    #participants = make.unique(as.character(pid_by_email$PID), sep="_")
+    #participants = unique(c(dfrt$PID,dfsynch$PID))
+    print(participants$PID)
+    print(c(1:nrow(participants)))
+    participants$PID[is.na(participants$PID)] <- "NA"
+    choices = setNames(c(1:nrow(participants)),participants$PID)
+    print(choices)
     if (is.null(pid_selection)) {
-      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = participants, selected = NULL, inline = TRUE)
+      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = choices, selected = NULL, inline = TRUE)
     } else {
       print(pid_selection)
-      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = participants, selected = pid_selection, inline = TRUE)
+      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = choices, selected = pid_selection, inline = TRUE)
     }
     
     UpdateVisualizations()
@@ -76,13 +97,16 @@ server = function(input, output, session) {
   
 
   UpdateVisualizations <- function() {
+    if (input$emailSelect == "-1") {
+      return()
+    }
     
     # Filter visualization data based on pid_selection
     if (!is.null(pid_selection)) {
-      dfrt <- dfrt %>% filter(PID %in% pid_selection)
-      dfsynch <- dfsynch %>% filter(PID %in% pid_selection)
+      dfrt <- dfrt %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_selection)
+      dfsynch <- dfsynch %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_selection)
     }
-    
+    print(paste("nrow:",nrow(dfrt)))
     output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTime) %>% 
                                          add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette) %>%
                                          layout(showlegend = TRUE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")) %>%
