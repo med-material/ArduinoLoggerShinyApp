@@ -11,6 +11,13 @@ footer {
     margin-top: 20px;
 }
 
+.vizcontrols-explainer {
+    background: no-repeat url("pan-zoom.svg");
+    height: 35px;
+    width: 100%;
+    display: inline-block;
+}
+
 .tab-content > .active {
     margin-top: 3em;
 }
