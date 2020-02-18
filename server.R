@@ -37,7 +37,6 @@ server = function(input, output, session) {
     # Filter visualizations based on the ?pid=XXX URL parameter (based on the tab's value attribute)
     if (!is.null(query[['pid']])) {
       pid = query[['pid']]
-      print(pid)
       pid_query <<- pid
       pid_selection <<- pid
     }
@@ -68,19 +67,12 @@ server = function(input, output, session) {
     if (input$emailSelect == "-1") {
       return()
     }
-    print(input$emailSelect)
     RefreshDataSets(input$emailSelect)
 
     # Update PID Choosers to show PID numbers based on the data
     participants <<- unique(rbind(dfrt %>% group_by(Email) %>% distinct(PID), dfsynch %>% group_by(Email) %>% distinct(PID)))
-    #pid_by_email = c(dfrt %>% group_by(Email) %>% distinct(PID), dfsynch %>% group_by(Email) %>% distinct(PID))
-    #participants = make.unique(as.character(pid_by_email$PID), sep="_")
-    #participants = unique(c(dfrt$PID,dfsynch$PID))
-    print(participants$PID)
-    print(c(1:nrow(participants)))
     participants$PID[is.na(participants$PID)] <- "NA"
     choices = setNames(c(1:nrow(participants)),participants$PID)
-    print(choices)
     if (is.null(pid_selection)) {
       updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = choices, selected = NULL, inline = TRUE)
     } else {
@@ -120,7 +112,7 @@ server = function(input, output, session) {
     dfm<-dfmed%>%group_by(Intens, Modal)%>%summarise(mean=mean(median))
     #dfmc<-dfmed%>%group_by(Intens, Modal)%>%count
     #create confidence intervals for each condition ((Intens x Modal))
-    dfmci<-summarySE(data = dfmed, measurevar = "median", groupvars = c("Intens","Modal"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+    dfmci<-summarySE(data = dfmed, measurevar = "median", groupvars = c("Intens","Modal"), na.rm = FALSE, conf.interval = conf.interval, .drop = TRUE)
     #pair up the confidence intervals and medians with the means
     dfrt_intensity<-merge(dfm,dfmci)
     dodge<-position_dodge(width=0.9)
