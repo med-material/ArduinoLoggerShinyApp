@@ -25,9 +25,11 @@ ui <- fluidPage(
           "Choose Visualization:",
           tabPanel("Reaction Time per Trial",
               plotlyOutput("rtTrialPlot"),
+              tags$div(class = "vizcontrols-explainer"),
           ),
           tabPanel("Reaction Time based on Intensity",
               plotlyOutput("rtIntensityPlot"),
+              tags$div(class = "vizcontrols-explainer"),
           )
         )
     ),
@@ -37,6 +39,7 @@ ui <- fluidPage(
                "Choose Visualization:",
                tabPanel("Synchronization based on Intensity",
                         plotlyOutput("synchViolinPlot"),
+                        tags$div(class = "vizcontrols-explainer"),
                         p("Filter data:"),
                         selectInput("Param", NULL, choices = c(levels(dfsynch$Comment),"NA")),
                ),
