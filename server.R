@@ -157,8 +157,8 @@ server = function(input, output, session) {
                                            config(scrollZoom = TRUE)
       )
       # IMPROVED INTENSITY PLOT.
-      #get medians of each participant per group (Intens x Modal)
-      dfmed<-dfrt%>%group_by(Email, Intens, Modal)%>%summarise(median=median(ReactionTime))
+      #get medians of each participant/PID combination per group (Intens x Modal)
+      dfmed<-dfrt%>%group_by(Email, PID, Intens, Modal)%>%summarise(median=median(ReactionTime))
       #create means of medians by group (Intens x Modal)
       dfm<-dfmed%>%group_by(Intens, Modal)%>%summarise(mean=mean(median))
       #dfmc<-dfmed%>%group_by(Intens, Modal)%>%count
