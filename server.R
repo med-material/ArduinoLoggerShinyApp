@@ -169,7 +169,8 @@ server = function(input, output, session) {
       dodge<-position_dodge(width=0.9)
       ggintensityplot <- ggplot(dfrt_intensity,
                                 aes(Intens,mean,group=Modal, color=Modal)) +
-        geom_point(data=dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
+        #geom_point(data=dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
+        geom_point(data=dfmed,aes(x=Intens,y=median,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
         geom_point(aes(group=Modal),position=dodge) +
         geom_errorbar(aes(ymin = median-ci, ymax = median+ci),width=0.2 ,position = dodge) +
         geom_line(position = dodge) +
