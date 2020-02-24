@@ -30,6 +30,10 @@ ui <- fluidPage(
           tabPanel("Reaction Time based on Intensity",
               plotlyOutput("rtIntensityPlot"),
               tags$div(class = "vizcontrols-explainer"),
+          ),
+          tabPanel("Reaction Time density plots",
+                   plotlyOutput("rtDensityPlot"),
+                   tags$div(class = "vizcontrols-explainer"),
           )
         )
     ),

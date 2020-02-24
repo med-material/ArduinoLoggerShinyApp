@@ -179,8 +179,11 @@ server = function(input, output, session) {
         xlab("Intensity") +
         ylim(0,500)
       output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot) %>%
-                                               config(scrollZoom = TRUE)
-      )
+                                               config(scrollZoom = TRUE))
+      # density plot
+      ggdensityPlot<-ggplot(dfrt, aes(ReactionTime,color=Intens)) +geom_density()+scale_x_continuous(limits = c(-50, 800),breaks = seq(0, 800, by = 50))+xlab("reaction time in ms")+theme_bw()+facet_grid(cols = vars(Modal))
+      output$rtDensityPlot <- renderPlotly(ggplotly(p = ggdensityPlot) %>%
+                                               config(scrollZoom = TRUE))
     } else if (subject == "synch") {
       print(paste("dfsynch filtered nrow:",nrow(dfsynch)))
 
