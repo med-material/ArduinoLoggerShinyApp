@@ -62,7 +62,6 @@ RefreshDataSets <- function(colfilter) {
   }
   # REFRESH REACTION TIME DATASET
   dfrt<<- RetreiveDataSet("reactiontime","Email",colfilter)
-  dfrt<<-dfrt[dfrt$ReactionTime<421,]
   dfrt$Intens<<-as.factor(dfrt$Intens)
   dfrt$Intens<<-factor(dfrt$Intens,levels = c("Low", "High"))
   dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits=-1)
