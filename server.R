@@ -208,7 +208,9 @@ server = function(input, output, session) {
       output$synchAbilityByMusicalityPlot <- renderPlotly(ggplotly(p = ggsynchMusicalAbilityPlot) %>%
                                                config(scrollZoom = TRUE)
       )
-      
+      ggGettingIntoSynchByMusicalityPlot = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(method = "loess")+theme_bw()+facet_grid(~MusicalAbility)
+      output$GettingIntoSynchByMusicalityPlot <- renderPlotly(ggplotly(p = ggGettingIntoSynchByMusicalityPlot) %>%
+                                                            config(scrollZoom = TRUE))
     }
   }
   

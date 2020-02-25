@@ -11,7 +11,7 @@ ui <- fluidPage(
     column(4,
            column(1, style = "margin-top : 20px; text-align: right;", icon("user", class = "fa-2x", lib="font-awesome")),
            column(11,style = "margin-top : 20px; text-align: center;",
-            selectInput("emailSelect", NULL, choices=c("Loading.." = -1)),
+            selectInput("emailSelect", NULL, choices=c("Loading.." = -1))
            )
     )
   ),
@@ -25,15 +25,15 @@ ui <- fluidPage(
           "Choose Visualization:",
           tabPanel("Reaction Time per Trial",
               plotlyOutput("rtTrialPlot"),
-              tags$div(class = "vizcontrols-explainer"),
+              tags$div(class = "vizcontrols-explainer")
           ),
           tabPanel("Reaction Time based on Intensity",
               plotlyOutput("rtIntensityPlot"),
-              tags$div(class = "vizcontrols-explainer"),
+              tags$div(class = "vizcontrols-explainer")
           ),
           tabPanel("Reaction Time density plots",
                    plotlyOutput("rtDensityPlot"),
-                   tags$div(class = "vizcontrols-explainer"),
+                   tags$div(class = "vizcontrols-explainer")
           )
         )
     ),
@@ -45,14 +45,17 @@ ui <- fluidPage(
                         plotlyOutput("synchViolinPlot"),
                         tags$div(class = "vizcontrols-explainer"),
                         p("Filter data:"),
-                        selectInput("Param", NULL, choices = c(levels(dfsynch$Comment),"NA")),
+                        selectInput("Param", NULL, choices = c(levels(dfsynch$Comment),"NA"))
                ),
                tabPanel("Synchronization based on MusicalAbility",
                         plotlyOutput("synchAbilityByMusicalityPlot"),
                         tags$div(class = "vizcontrols-explainer")
                         #selectInput("Param", NULL, choices = c(levels(dfsynch$Comment),"NA")),
-               )
-             ),
+               ),
+               tabPanel("Getting into synch on MusicalAbility",
+                        plotlyOutput("GettingIntoSynchByMusicalityPlot"),
+                        tags$div(class = "vizcontrols-explainer")
+             )
 
     ),
     tabPanel(value = "EDAIBISerial", strong("Physiological Data"),
@@ -60,4 +63,4 @@ ui <- fluidPage(
     )
   ),
   tags$footer()
-)
+))

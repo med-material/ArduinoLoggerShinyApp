@@ -69,6 +69,9 @@ RefreshDataSets <- function(colfilter) {
   
   # REFRESH SYNCH DATASET
   dfsynch <<- RetreiveDataSet("synch","Email",colfilter)
+  dfsynch$run <<-floor(dfsynch$TrialNo/21)
+  dfsynch$runTrialNo<<-ifelse(dfsynch$TrialNo>20,dfsynch$TrialNo-20,dfsynch$TrialNo)
+  dfsynch$absSynchOffset<<-abs(dfsynch$ReactionTime)
   dfsynch$Intens<<-as.factor(dfsynch$Intens)
   dfsynch$Intens<<-factor(dfsynch$Intens,levels = c("Low", "High"))
   dfsynch$Modal<<-as.factor(dfsynch$Modal)
