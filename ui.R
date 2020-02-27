@@ -54,6 +54,7 @@ ui <- fluidPage(
                ),
                tabPanel("Getting into synch on MusicalAbility",
                         plotlyOutput("GettingIntoSynchByMusicalityPlot"),
+                        plotlyOutput("GettingIntoSynchByMusicalityPlotPower"),
                         tags$div(class = "vizcontrols-explainer")
              )
 
