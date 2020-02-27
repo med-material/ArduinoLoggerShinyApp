@@ -211,7 +211,7 @@ server = function(input, output, session) {
       ggGettingIntoSynchByMusicalityPlot = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(method = "loess")+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+theme_bw()+facet_grid(~MusicalAbility)
       output$GettingIntoSynchByMusicalityPlot <- renderPlotly(ggplotly(p = ggGettingIntoSynchByMusicalityPlot) %>%
                                                             config(scrollZoom = TRUE))
-      GettingIntoSynchByMusicalityPlotPowerX = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(method = "loess")+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+ylab("absolute offset from beat in ms")+xlab("attempt number")+theme_bw()+facet_grid(~MusicalAbility)
+      GettingIntoSynchByMusicalityPlotPowerX = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(method = "loess",linetype=0))+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+ylab("absolute offset from beat in ms")+xlab("attempt number")+theme_bw()+facet_grid(~MusicalAbility)
       output$GettingIntoSynchByMusicalityPlotPower <- renderPlotly(ggplotly(p = GettingIntoSynchByMusicalityPlotPowerX) %>%
                                                                 config(scrollZoom = TRUE))
       
