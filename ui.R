@@ -53,7 +53,7 @@ ui <- fluidPage(
                         #selectInput("Param", NULL, choices = c(levels(dfsynch$Comment),"NA")),
                ),
                tabPanel("Getting into synch on MusicalAbility",
-                        plotlyOutput("GettingIntoSynchByMusicalityPlot"),
+                        #plotlyOutput("GettingIntoSynchByMusicalityPlot"),
                         plotlyOutput("GettingIntoSynchByMusicalityPlotPower"),
                         tags$div(class = "vizcontrols-explainer")
              )

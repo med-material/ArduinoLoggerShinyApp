@@ -40,3 +40,4 @@ vignettes/*.pdf
 
 #credentials
 credentials.csv
+.Rproj.user
