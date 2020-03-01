@@ -177,7 +177,7 @@ server = function(input, output, session) {
         theme_bw() +
         theme(legend.title=element_blank()) +
         ylab("Reaction Time (ms)") + 
-        xlab("Intensity") +
+        xlab("Intensity \n .95 confidence error bars are based on the \n median reaction time values of the participants (included as dots) ") +
         ylim(0,500)
       output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot) %>%
                                                config(scrollZoom = TRUE))

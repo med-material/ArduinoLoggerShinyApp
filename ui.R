@@ -34,9 +34,11 @@ ui <- fluidPage(
           tabPanel("Reaction Time density plots",
                    plotlyOutput("rtDensityPlot"),
                    tags$div(class = "vizcontrols-explainer")
+                   
           )
         )
     ),
+    #synch panel -----------
     tabPanel(value  = "synch", id = "synchPan", strong("SynchTime"),
              navlistPanel(
                widths = c(4, 8),
@@ -56,11 +58,13 @@ ui <- fluidPage(
                         #plotlyOutput("GettingIntoSynchByMusicalityPlot"),
                         plotlyOutput("GettingIntoSynchByMusicalityPlotPower"),
                         tags$div(class = "vizcontrols-explainer")
+                        #textOutput("The grey band is a moving aver")
+                        #plot("The grey band is a moving aver")
              )
-
-    ),
-    tabPanel(value = "EDAIBISerial", strong("Physiological Data"),
-      p("Coming soon..")
+# EDAIBIserial panel ----------
+    #),
+    #tabPanel(value = "EDAIBISerial", strong("Physiological Data"),
+    #  p("Coming soon..")
     )
   ),
   tags$footer()
