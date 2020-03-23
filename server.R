@@ -216,6 +216,10 @@ server = function(input, output, session) {
                                                                 config(scrollZoom = TRUE))
       
     }
+    else if (subject == "EDAIBISerial") {
+ 
+      
+    }
   }
   
 }

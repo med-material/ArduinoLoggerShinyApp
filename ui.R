@@ -18,7 +18,8 @@ ui <- fluidPage(
   fluidRow(
     column(12, checkboxGroupInput("pidChooser", label = "Loading...", choices = NULL, inline = TRUE))
   ),
-  tabsetPanel(id = "subjectChooser", type = "tabs",
+ # RT part------
+   tabsetPanel(id = "subjectChooser", type = "tabs",
     tabPanel(value  = "reactiontime", id = "reactPan", strong("ReactionTime"),
         navlistPanel(
           widths = c(4, 8),
@@ -60,12 +61,10 @@ ui <- fluidPage(
                         tags$div(class = "vizcontrols-explainer")
                         #textOutput("The grey band is a moving aver")
                         #plot("The grey band is a moving aver")
-             )
-# EDAIBIserial panel ----------
-    #),
-    #tabPanel(value = "EDAIBISerial", strong("Physiological Data"),
-    #  p("Coming soon..")
-    )
-  ),
+             ))),
+#EDAIBIserial panel ----------
+    tabPanel(value = "EDAIBISerial", strong("Physiological Data"),
+      p("Coming soon..")
+    ),
   tags$footer()
 ))

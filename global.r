@@ -29,8 +29,9 @@ RetreiveUniqueColVals <- function(tablename, column) {
 
 rt_accounts = RetreiveUniqueColVals("reactiontime","Email")
 synch_accounts = RetreiveUniqueColVals("synch","Email")
+physio_accounts= RetreiveUniqueColVals("EDAIBISerial","Email")
 
-all_accounts = unique(c(rt_accounts,synch_accounts))
+all_accounts = unique(c(rt_accounts,synch_accounts,physio_accounts))
 
 
 # RetreiveDataSet() Used to query for a specific dataset. 
@@ -76,6 +77,10 @@ RefreshDataSets <- function(colfilter) {
   dfsynch$Intens<<-factor(dfsynch$Intens,levels = c("Low", "High"))
   dfsynch$Modal<<-as.factor(dfsynch$Modal)
   dfsynch$MusicalAbility<<-as.factor(dfsynch$MusicalAbility)  
+  
+  # REFRESH physio DATASET
+  dfphysio <<- RetreiveDataSet("EDAIBISerial","Email",colfilter)
+ 
 }
 
 
