@@ -1,6 +1,8 @@
 library(RMySQL)
 library(plyr)
 library(ggplot2)
+library(seewave)
+library(zoo)
 
 
 my_data <- read.csv("credentials.csv", header=TRUE,sep=",", colClasses=c("character","character","character","character"))
@@ -27,14 +29,14 @@ RetreiveUniqueColVals <- function(tablename, column) {
   return(unlist(vals)) # if there are several values, they arrive as a list, so unlist them on arrival.
 }
 
-rt_accounts = RetreiveUniqueColVals("reactiontime","Email")
-synch_accounts = RetreiveUniqueColVals("synch","Email")
-physio_accounts= RetreiveUniqueColVals("EDAIBISerial","Email")
+rt_accounts =     RetreiveUniqueColVals("reactiontime","Email")
+synch_accounts =  RetreiveUniqueColVals("synch", "Email")
+physio_accounts=  RetreiveUniqueColVals("EDAIBISerial","Email")
 
 all_accounts = unique(c(rt_accounts,synch_accounts,physio_accounts))
 
 
-# RetreiveDataSet() Used to query for a specific dataset. 
+# RetreiveDataSet() Used to query for a specific dataset.
 # Setting colvalue to NULL retreives all data.
 # USAGE:
 #dtest = RetreiveDataSet("reactiontime","Email","mhel@create.aau.dk")
@@ -76,13 +78,34 @@ RefreshDataSets <- function(colfilter) {
   dfsynch$Intens<<-as.factor(dfsynch$Intens)
   dfsynch$Intens<<-factor(dfsynch$Intens,levels = c("Low", "High"))
   dfsynch$Modal<<-as.factor(dfsynch$Modal)
-  dfsynch$MusicalAbility<<-as.factor(dfsynch$MusicalAbility)  
+  dfsynch$MusicalAbility<<-as.factor(dfsynch$MusicalAbility) 
   
   # REFRESH physio DATASET
   dfphysio <<- RetreiveDataSet("EDAIBISerial","Email",colfilter)
- 
+  dfphysio$Millis<<-as.integer(dfphysio$Millis)
+  dfphysio$EDA<<-as.integer(dfphysio$EDA)
+  dfphysio$IBI<<-as.integer(dfphysio$IBI)
+  dfphysio$RawPulse<<-as.integer(dfphysio$RawPulse)
+  dfphysio$Pressure<<-as.integer(dfphysio$Pressure)
+  dfphysio$Button<<-as.integer(dfphysio$Button)
+  
+  dfEDAStart<<-dfphysio[,c("TimeStamp","Email","PID","Comment", "Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
+  dfEDAStart <<- rename(dfEDAStart, EDAStartMillis = Millis)
+  dfphysio<<-merge(dfphysio,dfEDAStart,by=c("TimeStamp","PID","Comment","Email"))
+  dfphysio$TimeLine<<-(dfphysio$Millis-dfphysio$EDAStartMillis)/1000
+  dfphysio$EDAsmoothed<<-c(rep(NA,9),rollmean(dfphysio$EDA,10))
+  dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
+  
+  dfIBI<<-dfphysio[dfphysio$IBI!=0,]
+  dfIBIstart<<- dfIBI[,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
+  dfIBIstart <<- rename(dfIBIstart, IBIStartMillis = Millis)
+  dfIBI<<-merge(dfIBI,dfIBIstart,by=c("TimeStamp","PID","Comment","Email"))
+  dfIBI$start<<-dfIBI$Millis-dfIBI$IBIStartMillis
+  #dfIBI <<-dfIBI %>% group_by(Email,TimeStamp,PID,Comment) %>% mutate(TimeLine = cumsum(IBI)/1000)
+
 }
 
 
 dfrt <- data.frame()
 dfsynch <- data.frame()
+dfphysio<-data.frame()

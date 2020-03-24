@@ -44,12 +44,12 @@ server = function(input, output, session) {
       updateSelectInput(session , "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
     }
   })
-
+  
   observeEvent({input$subjectChooser}, {
     if (input$subjectChooser != subject) {
       subject <<- input$subjectChooser
-      UpdatePIDSelection()      
-      UpdateVisualizations()      
+      UpdatePIDSelection()     
+      UpdateVisualizations()     
     }
   })
   
@@ -77,24 +77,25 @@ server = function(input, output, session) {
     }
     print(paste("pidChooser: pid_index ", pid_index))
     print(paste("pidChooser: pid_name ", pid_name))
-    UpdateVisualizations()  
+    UpdateVisualizations() 
   })
   observeEvent({input$emailSelect},{
     if (input$emailSelect == "-1") {
       return()
     }
     RefreshDataSets(input$emailSelect)
-
+    
     UpdatePIDSelection()
     
     UpdateVisualizations()
   })
-  observeEvent(input$Param, {  
+  observeEvent(input$Param, { 
     UpdateVisualizations()
   })
   
   UpdatePIDSelection <- function() {
     # Update PID Choosers to show PID numbers based on the data
+    # for synch -------
     if (subject == "synch") {
       participants <<- unique(dfsynch %>% group_by(Email) %>% distinct(PID))
       participants$PID[is.na(participants$PID)] <<- "NA"
@@ -103,7 +104,9 @@ server = function(input, output, session) {
       } else {
         choices <<- NULL
       }
-    } else if (subject == "reactiontime") {
+    }
+    # for reaction time  -------
+    else if (subject == "reactiontime") {
       participants <<- unique(dfrt %>% group_by(Email) %>% distinct(PID))
       participants$PID[is.na(participants$PID)] <<- "NA"
       if (nrow(participants) > 0) {
@@ -112,6 +115,16 @@ server = function(input, output, session) {
         choices <<- NULL
       }
     }
+    # for physio -------
+    # else if (subject == "EDAIBISerial") {
+    #   participants <<- unique(dfphysio %>% group_by(Email) %>% distinct(PID))
+    #   participants$PID[is.na(participants$PID)] <<- "NA"
+    #   if (nrow(participants) > 0) {
+    #     choices <<- setNames(c(1:nrow(participants)),participants$PID)
+    #   } else {
+    #     choices <<- NULL
+    #   }
+    # }
     if (!is.null(pid_query)) {
       pid_name <<- pid_query
       pid_query <<- NULL
@@ -135,7 +148,7 @@ server = function(input, output, session) {
       updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = choices, selected = pid_index, inline = TRUE)
     }
   }
-
+  
   UpdateVisualizations <- function() {
     if (input$emailSelect == "-1") {
       return()
@@ -143,15 +156,19 @@ server = function(input, output, session) {
     print(paste("UpdateVis pid: ", pid_name))
     print(paste("dfrt nrow:",nrow(dfrt)))
     print(paste("dfsynch nrow:",nrow(dfsynch)))
+    print(paste("dfphysio nrow:",nrow(dfphysio)))
+    
     # Filter visualization data based on pid_name
     if (!is.null(pid_name)) {
       dfrt <- dfrt %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_name)
       dfsynch <- dfsynch %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_name)
+      # dfphysio<- dfphysio %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_name)
     }
     if (subject == "reactiontime") {
+      # RT ABILITY PLOT -------
       print(paste("dfrt filtered nrow:",nrow(dfrt)))
-
-      output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTime) %>% 
+      
+      output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTime) %>%
                                            add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette) %>%
                                            layout(showlegend = TRUE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")) %>%
                                            config(scrollZoom = TRUE)
@@ -176,7 +193,7 @@ server = function(input, output, session) {
         geom_line(position = dodge) +
         theme_bw() +
         theme(legend.title=element_blank()) +
-        ylab("Reaction Time (ms)") + 
+        ylab("Reaction Time (ms)") +
         xlab("Intensity \n .95 confidence error bars are based on the \n median reaction time values of the participants (included as dots) ") +
         ylim(0,500)
       output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot) %>%
@@ -184,11 +201,11 @@ server = function(input, output, session) {
       # density plot
       ggdensityPlot<-ggplot(dfrt, aes(ReactionTime,color=Intens)) +geom_density()+scale_x_continuous(limits = c(-50, 800),breaks = seq(0, 800, by = 100))+xlab("reaction time in ms")+theme_bw()+facet_grid(cols = vars(Modal))
       output$rtDensityPlot <- renderPlotly(ggplotly(p = ggdensityPlot) %>%
-                                               config(scrollZoom = TRUE))
+                                             config(scrollZoom = TRUE))
     } else if (subject == "synch") {
       print(paste("dfsynch filtered nrow:",nrow(dfsynch)))
-
-      # SYNCH ABILITY VS INTENSITY PLOT
+      
+      # SYNCH ABILITY VS INTENSITY PLOT -------
       dfsynch = dfsynch[!is.na(dfsynch$ReactionTime),]
       ggsynchViolinPlot = ggplot(dfsynch,
                                  aes(Intens,ReactionTime,fill=Modal)) +
@@ -206,21 +223,29 @@ server = function(input, output, session) {
       # Synch Performance based on Musical Ability Plot
       ggsynchMusicalAbilityPlot =  ggplot(dfsynch, aes(ReactionTime,color=MusicalAbility))+geom_vline(xintercept=0) +geom_density()+scale_x_continuous(limits = c(-500, 500),breaks = seq(-500, 500, by = 100))+xlab("synch offset in ms")+theme_bw()+facet_grid(cols = vars(Modal))
       output$synchAbilityByMusicalityPlot <- renderPlotly(ggplotly(p = ggsynchMusicalAbilityPlot) %>%
-                                               config(scrollZoom = TRUE)
+                                                            config(scrollZoom = TRUE)
       )
       #ggGettingIntoSynchByMusicalityPlot = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(method = "loess",linetype=0)+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+theme_bw()+facet_grid(~MusicalAbility)
       #output$GettingIntoSynchByMusicalityPlot <- renderPlotly(ggplotly(p = ggGettingIntoSynchByMusicalityPlot) %>%
       #                                                      config(scrollZoom = TRUE))
       GettingIntoSynchByMusicalityPlotPowerX = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(size=0)+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+ylab("absolute offset from beat in ms")+xlab("attempt number #")+theme_bw()+facet_grid(~MusicalAbility)
       output$GettingIntoSynchByMusicalityPlotPower <- renderPlotly(ggplotly(p = GettingIntoSynchByMusicalityPlotPowerX) %>%
-                                                                config(scrollZoom = TRUE))
+                                                                     config(scrollZoom = TRUE))
       
     }
+    
     else if (subject == "EDAIBISerial") {
- 
+      # physio  PLOT -------
+      IBIplot = ggplot(dfIBI,aes(x=TimeLine,y=IBI))+geom_point()+ylab("inter-beat interval in ms")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+geom_hline(yintercept=300,color='red')+geom_hline(yintercept=2000, color='green')
+      output$physioIBIplot <- renderPlotly(ggplotly(p = IBIplot) %>% config(scrollZoom = TRUE))
       
+      EDAplotX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothed))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))
+      output$EDAplot <- renderPlotly(ggplotly(p = EDAplotX) %>% config(scrollZoom = TRUE))
+      
+      EDAplotbwX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothedbw))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))
+      output$EDAplotBW <- renderPlotly(ggplotly(p = EDAplotbwX) %>% config(scrollZoom = TRUE))
     }
   }
   
 }
-  
+
