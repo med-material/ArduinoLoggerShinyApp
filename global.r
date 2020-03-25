@@ -63,45 +63,51 @@ RefreshDataSets <- function(colfilter) {
     # -1 is the default value R Shiny uses on startup.
     return()
   }
-  # REFRESH REACTION TIME DATASET
+
   dfrt<<- RetreiveDataSet("reactiontime","Email",colfilter)
-  dfrt$Intens<<-as.factor(dfrt$Intens)
-  dfrt$Intens<<-factor(dfrt$Intens,levels = c("Low", "High"))
-  dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits=-1)
-  dfrt$Modal <<- as.factor(dfrt$Modal)
-  
-  # REFRESH SYNCH DATASET
   dfsynch <<- RetreiveDataSet("synch","Email",colfilter)
-  dfsynch$run <<-floor(dfsynch$TrialNo/21)
-  dfsynch$runTrialNo<<-ifelse(dfsynch$TrialNo>20,dfsynch$TrialNo-20,dfsynch$TrialNo)
-  dfsynch$absSynchOffset<<-abs(dfsynch$ReactionTime)
-  dfsynch$Intens<<-as.factor(dfsynch$Intens)
-  dfsynch$Intens<<-factor(dfsynch$Intens,levels = c("Low", "High"))
-  dfsynch$Modal<<-as.factor(dfsynch$Modal)
-  dfsynch$MusicalAbility<<-as.factor(dfsynch$MusicalAbility) 
-  
-  # REFRESH physio DATASET
   dfphysio <<- RetreiveDataSet("EDAIBISerial","Email",colfilter)
-  dfphysio$Millis<<-as.integer(dfphysio$Millis)
-  dfphysio$EDA<<-as.integer(dfphysio$EDA)
-  dfphysio$IBI<<-as.integer(dfphysio$IBI)
-  dfphysio$RawPulse<<-as.integer(dfphysio$RawPulse)
-  dfphysio$Pressure<<-as.integer(dfphysio$Pressure)
-  dfphysio$Button<<-as.integer(dfphysio$Button)
-  
-  dfEDAStart<<-dfphysio[,c("TimeStamp","Email","PID","Comment", "Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
-  dfEDAStart <<- rename(dfEDAStart, EDAStartMillis = Millis)
-  dfphysio<<-merge(dfphysio,dfEDAStart,by=c("TimeStamp","PID","Comment","Email"))
-  dfphysio$TimeLine<<-(dfphysio$Millis-dfphysio$EDAStartMillis)/1000
-  dfphysio$EDAsmoothed<<-c(rep(NA,9),rollmean(dfphysio$EDA,10))
-  dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
-  
-  dfIBI<<-dfphysio[dfphysio$IBI!=0,]
-  dfIBIstart<<- dfIBI[,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
-  dfIBIstart <<- rename(dfIBIstart, IBIStartMillis = Millis)
-  dfIBI<<-merge(dfIBI,dfIBIstart,by=c("TimeStamp","PID","Comment","Email"))
-  dfIBI$start<<-dfIBI$Millis-dfIBI$IBIStartMillis
-  #dfIBI <<-dfIBI %>% group_by(Email,TimeStamp,PID,Comment) %>% mutate(TimeLine = cumsum(IBI)/1000)
+
+  # REFRESH REACTION TIME DATASET  
+  if (colfilter %in% dfrt$Email) {
+    dfrt$Intens<<-as.factor(dfrt$Intens)
+    dfrt$Intens<<-factor(dfrt$Intens,levels = c("Low", "High"))
+    dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits=-1)
+    dfrt$Modal <<- as.factor(dfrt$Modal)
+  }
+  # REFRESH SYNCH DATASET
+  if (colfilter %in% dfsynch$Email) {  
+    dfsynch$run <<-floor(dfsynch$TrialNo/21)
+    dfsynch$runTrialNo<<-ifelse(dfsynch$TrialNo>20,dfsynch$TrialNo-20,dfsynch$TrialNo)
+    dfsynch$absSynchOffset<<-abs(dfsynch$ReactionTime)
+    dfsynch$Intens<<-as.factor(dfsynch$Intens)
+    dfsynch$Intens<<-factor(dfsynch$Intens,levels = c("Low", "High"))
+    dfsynch$Modal<<-as.factor(dfsynch$Modal)
+    dfsynch$MusicalAbility<<-as.factor(dfsynch$MusicalAbility) 
+  }
+  # REFRESH physio DATASET
+  if (colfilter %in% dfphysio$Email) {
+    dfphysio$Millis<<-as.integer(dfphysio$Millis)
+    dfphysio$EDA<<-as.integer(dfphysio$EDA)
+    dfphysio$IBI<<-as.integer(dfphysio$IBI)
+    dfphysio$RawPulse<<-as.integer(dfphysio$RawPulse)
+    dfphysio$Pressure<<-as.integer(dfphysio$Pressure)
+    dfphysio$Button<<-as.integer(dfphysio$Button)
+    
+    dfEDAStart<<-dfphysio[,c("TimeStamp","Email","PID","Comment", "Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
+    dfEDAStart <<- rename(dfEDAStart, EDAStartMillis = Millis)
+    dfphysio<<-merge(dfphysio,dfEDAStart,by=c("TimeStamp","PID","Comment","Email"))
+    dfphysio$TimeLine<<-(dfphysio$Millis-dfphysio$EDAStartMillis)/1000
+    dfphysio$EDAsmoothed<<-c(rep(NA,9),rollmean(dfphysio$EDA,10))
+    dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
+    
+    dfIBI<<-dfphysio[dfphysio$IBI!=0,]
+    dfIBIstart<<- dfIBI[,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
+    dfIBIstart <<- rename(dfIBIstart, IBIStartMillis = Millis)
+    dfIBI<<-merge(dfIBI,dfIBIstart,by=c("TimeStamp","PID","Comment","Email"))
+    dfIBI$start<<-dfIBI$Millis-dfIBI$IBIStartMillis
+    #dfIBI <<-dfIBI %>% group_by(Email,TimeStamp,PID,Comment) %>% mutate(TimeLine = cumsum(IBI)/1000)
+  }
 
 }
 
