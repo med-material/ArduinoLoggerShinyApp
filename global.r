@@ -106,12 +106,11 @@ RefreshDataSets <- function(colfilter) {
     }
     dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
     
-    dfIBI<<-dfphysio[dfphysio$IBI!=0,]
-    dfIBIstart<<- dfIBI[,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
-    dfIBIstart <<- rename(dfIBIstart, IBIStartMillis = Millis)
-    dfIBI<<-merge(dfIBI,dfIBIstart,by=c("TimeStamp","PID","Comment","Email"))
-    dfIBI$start<<-dfIBI$Millis-dfIBI$IBIStartMillis
-    #dfIBI <<-dfIBI %>% group_by(Email,TimeStamp,PID,Comment) %>% mutate(TimeLine = cumsum(IBI)/1000)
+    dfIBIstart<- dfIBI[,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
+    dfIBIstart <- rename(dfIBIstart, IBIStartMillis = Millis)
+    
+    dfphysio<<-merge(dfphysio,dfIBIstart,by=c("TimeStamp","PID","Comment","Email"))
+    dfphysio$start<<-dfphysio$Millis-dfIBI$IBIStartMillis
   }
 
 }

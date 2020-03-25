@@ -18,6 +18,22 @@ server = function(input, output, session) {
   pid_query <- NULL
   subject <- 'reactiontime'
   
+  print_nodata_msg <- function() {
+    msg <- paste("No ", subject, " data to show for ", sep='')
+    
+    mail <- all_accounts[[1]]
+    if (!is.null(pid_email)) {
+      mail <- pid_email
+    }
+    msg <- paste(msg, mail, sep='')
+    
+    if (!is.null(pid_name)) {
+      msg <- paste(msg, ", Participant ", pid_name, sep='')
+    }
+    msg <- paste(msg, ".", sep='')
+    
+  }
+  
   # a variable we use to keep track of the currently available participants
   participants <- NULL
   choices <- NULL
@@ -168,82 +184,109 @@ server = function(input, output, session) {
       # RT ABILITY PLOT -------
       print(paste("dfrt filtered nrow:",nrow(dfrt)))
       
-      output$rtTrialPlot <- renderPlotly(plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTime) %>%
-                                           add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette) %>%
-                                           layout(showlegend = TRUE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")) %>%
-                                           config(scrollZoom = TRUE)
-      )
-      # IMPROVED INTENSITY PLOT.
-      #get medians of each participant/PID combination per group (Intens x Modal)
-      dfmed<-dfrt%>% filter(ReactionTime < 421) %>% group_by(Email, PID, Intens, Modal)%>%summarise(median=median(ReactionTime))
-      #create means of medians by group (Intens x Modal)
-      dfm<-dfmed%>%group_by(Intens, Modal)%>%summarise(mean=mean(median))
-      #dfmc<-dfmed%>%group_by(Intens, Modal)%>%count
-      #create confidence intervals for each condition ((Intens x Modal))
-      dfmci<-summarySE(data = dfmed, measurevar = "median", groupvars = c("Intens","Modal"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
-      #pair up the confidence intervals and medians with the means
-      dfrt_intensity<-merge(dfm,dfmci)
-      dodge<-position_dodge(width=0.9)
-      ggintensityplot <- ggplot(dfrt_intensity,
-                                aes(Intens,mean,group=Modal, color=Modal)) +
-        #geom_point(data=dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
-        geom_point(data=dfmed,aes(x=Intens,y=median,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
-        geom_point(aes(group=Modal),position=dodge) +
-        geom_errorbar(aes(ymin = median-ci, ymax = median+ci),width=0.2 ,position = dodge) +
-        geom_line(position = dodge) +
-        theme_bw() +
-        theme(legend.title=element_blank()) +
-        ylab("Reaction Time (ms)") +
-        xlab("Intensity \n .95 confidence error bars are based on the \n median reaction time values of the participants (included as dots) ") +
-        ylim(0,500)
-      output$rtIntensityPlot <- renderPlotly(ggplotly(p = ggintensityplot) %>%
-                                               config(scrollZoom = TRUE))
+      output$rtTrialPlot <- renderPlotly({
+         validate( need(nrow(dfrt) > 0, print_nodata_msg()))
+        
+         plot_ly(dfrt, x = ~dfrt$TrialNo, y = ~dfrt$ReactionTime) %>%
+         add_trace(type = 'scatter', mode='markers', name = ~Modal , color = ~Modal , colors = colorPalette) %>%
+         layout(showlegend = TRUE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0,500), title = "Reaction Time (ms)")) %>%
+         config(scrollZoom = TRUE)
+      })
+
+      output$rtIntensityPlot <- renderPlotly({
+        validate( need(nrow(dfrt) > 0, print_nodata_msg()))
+        
+        # IMPROVED INTENSITY PLOT.
+        #get medians of each participant/PID combination per group (Intens x Modal)
+        dfmed<-dfrt%>% filter(ReactionTime < 421) %>% group_by(Email, PID, Intens, Modal)%>%summarise(median=median(ReactionTime))
+        #create means of medians by group (Intens x Modal)
+        dfm<-dfmed%>%group_by(Intens, Modal)%>%summarise(mean=mean(median))
+        #dfmc<-dfmed%>%group_by(Intens, Modal)%>%count
+        #create confidence intervals for each condition ((Intens x Modal))
+        dfmci<-summarySE(data = dfmed, measurevar = "median", groupvars = c("Intens","Modal"), na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+        #pair up the confidence intervals and medians with the means
+        dfrt_intensity<-merge(dfm,dfmci)
+        dodge<-position_dodge(width=0.9)
+        ggintensityplot <- ggplot(dfrt_intensity,
+          aes(Intens,mean,group=Modal, color=Modal)) +
+          #geom_point(data=dfrt,aes(x=Intens,y=ReactionTime,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
+          geom_point(data=dfmed,aes(x=Intens,y=median,group=Modal, color=Modal),alpha=.15,position= position_jitterdodge()) +
+          geom_point(aes(group=Modal),position=dodge) +
+          geom_errorbar(aes(ymin = median-ci, ymax = median+ci),width=0.2 ,position = dodge) +
+          geom_line(position = dodge) +
+          theme_bw() +
+          theme(legend.title=element_blank()) +
+          ylab("Reaction Time (ms)") +
+          xlab("Intensity \n .95 confidence error bars are based on the \n median reaction time values of the participants (included as dots) ") +
+          ylim(0,500)
+        
+        ggplotly(p = ggintensityplot) %>% config(scrollZoom = TRUE)
+      })
+      
+      
       # density plot
-      ggdensityPlot<-ggplot(dfrt, aes(ReactionTime,color=Intens)) +geom_density()+scale_x_continuous(limits = c(-50, 800),breaks = seq(0, 800, by = 100))+xlab("reaction time in ms")+theme_bw()+facet_grid(cols = vars(Modal))
-      output$rtDensityPlot <- renderPlotly(ggplotly(p = ggdensityPlot) %>%
-                                             config(scrollZoom = TRUE))
+      output$rtDensityPlot <- renderPlotly({
+        validate( need(nrow(dfrt) > 0, print_nodata_msg()))
+        
+        ggdensityPlot<-ggplot(dfrt, aes(ReactionTime,color=Intens)) +geom_density()+scale_x_continuous(limits = c(-50, 800),breaks = seq(0, 800, by = 100))+xlab("reaction time in ms")+theme_bw()+facet_grid(cols = vars(Modal))        
+        ggplotly(p = ggdensityPlot) %>% config(scrollZoom = TRUE)
+        })
     } else if (subject == "synch") {
       print(paste("dfsynch filtered nrow:",nrow(dfsynch)))
       
       # SYNCH ABILITY VS INTENSITY PLOT -------
-      dfsynch = dfsynch[!is.na(dfsynch$ReactionTime),]
-      ggsynchViolinPlot = ggplot(dfsynch,
-                                 aes(Intens,ReactionTime,fill=Modal)) +
-        geom_violin() +
-        facet_wrap(vars(MusicalAbility)) +
-        geom_point(data=dfsynch,aes(Intens,ReactionTime,fill=Modal),alpha=0.2,position= position_jitterdodge()) +
-        xlab("Intensity") +
-        ylab("Synch Offset (ms)") +
-        theme_minimal() +
-        theme(legend.title=element_blank(), plot.title=element_blank())
-      output$synchViolinPlot <- renderPlotly(ggplotly(p = ggsynchViolinPlot) %>%
-                                               config(scrollZoom = TRUE)
-      )
+      output$synchViolinPlot <- renderPlotly({
+        validate( need(nrow(dfsynch) > 0, print_nodata_msg()))
+        
+        dfsynch = dfsynch[!is.na(dfsynch$ReactionTime),]
+        ggsynchViolinPlot = ggplot(dfsynch,
+          aes(Intens,ReactionTime,fill=Modal)) +
+          geom_violin() +
+          facet_wrap(vars(MusicalAbility)) +
+          geom_point(data=dfsynch,aes(Intens,ReactionTime,fill=Modal),alpha=0.2,position= position_jitterdodge()) +
+          xlab("Intensity") +
+          ylab("Synch Offset (ms)") +
+          theme_minimal() +
+          theme(legend.title=element_blank(), plot.title=element_blank())        
+        
+        ggplotly(p = ggsynchViolinPlot) %>% config(scrollZoom = TRUE)
+      })
       
       # Synch Performance based on Musical Ability Plot
-      ggsynchMusicalAbilityPlot =  ggplot(dfsynch, aes(ReactionTime,color=MusicalAbility))+geom_vline(xintercept=0) +geom_density()+scale_x_continuous(limits = c(-500, 500),breaks = seq(-500, 500, by = 100))+xlab("synch offset in ms")+theme_bw()+facet_grid(cols = vars(Modal))
-      output$synchAbilityByMusicalityPlot <- renderPlotly(ggplotly(p = ggsynchMusicalAbilityPlot) %>%
-                                                            config(scrollZoom = TRUE)
-      )
-      #ggGettingIntoSynchByMusicalityPlot = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(method = "loess",linetype=0)+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+theme_bw()+facet_grid(~MusicalAbility)
-      #output$GettingIntoSynchByMusicalityPlot <- renderPlotly(ggplotly(p = ggGettingIntoSynchByMusicalityPlot) %>%
-      #                                                      config(scrollZoom = TRUE))
-      GettingIntoSynchByMusicalityPlotPowerX = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(size=0)+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+ylab("absolute offset from beat in ms")+xlab("attempt number #")+theme_bw()+facet_grid(~MusicalAbility)
-      output$GettingIntoSynchByMusicalityPlotPower <- renderPlotly(ggplotly(p = GettingIntoSynchByMusicalityPlotPowerX) %>%
-                                                                     config(scrollZoom = TRUE))
+      output$synchAbilityByMusicalityPlot <- renderPlotly({
+        validate( need(nrow(dfsynch) > 0, print_nodata_msg()))
+        ggsynchMusicalAbilityPlot =  ggplot(dfsynch, aes(ReactionTime,color=MusicalAbility))+geom_vline(xintercept=0) +geom_density()+scale_x_continuous(limits = c(-500, 500),breaks = seq(-500, 500, by = 100))+xlab("synch offset in ms")+theme_bw()+facet_grid(cols = vars(Modal))
+        ggplotly(p = ggsynchMusicalAbilityPlot) %>% config(scrollZoom = TRUE)
+      })
+
+      output$GettingIntoSynchByMusicalityPlotPower <- renderPlotly({
+        validate( need(nrow(dfsynch) > 0, print_nodata_msg()))
+        GettingIntoSynchByMusicalityPlotPowerX = ggplot(dfsynch,aes(x=runTrialNo,y=absSynchOffset))+geom_point()+ geom_smooth(size=0)+ stat_smooth(aes(color="red"),method = 'nls', formula = 'y~a*x^b', method.args = list(start= c(a = 1,b=1)),se=FALSE)+ylab("absolute offset from beat in ms")+xlab("attempt number #")+theme_bw()+facet_grid(~MusicalAbility)
+        ggplotly(p = GettingIntoSynchByMusicalityPlotPowerX) %>% config(scrollZoom = TRUE)
+        })
       
     }
     
     else if (subject == "EDAIBISerial") {
       # physio  PLOT -------
-      IBIplot = ggplot(dfIBI,aes(x=TimeLine,y=IBI))+geom_point()+ylab("inter-beat interval in ms")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+geom_hline(yintercept=300,color='red')+geom_hline(yintercept=2000, color='green')
-      output$physioIBIplot <- renderPlotly(ggplotly(p = IBIplot) %>% config(scrollZoom = TRUE))
+      dfIBI <- dfphysio[dfphysio$IBI!=0,]
+      output$physioIBIplot <- renderPlotly({
+        validate( need(nrow(dfIBI) > 0, print_nodata_msg()))
+        IBIplot = ggplot(dfIBI,aes(x=TimeLine,y=IBI))+geom_point()+ylab("inter-beat interval in ms")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+geom_hline(yintercept=300,color='red')+geom_hline(yintercept=2000, color='green')
+        ggplotly(p = IBIplot) %>% config(scrollZoom = TRUE)
+      })
       
-      EDAplotX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothed))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))
-      output$EDAplot <- renderPlotly(ggplotly(p = EDAplotX) %>% config(scrollZoom = TRUE))
+      output$EDAplot <- renderPlotly({
+        validate( need(nrow(dfphysio) > 0, print_nodata_msg()))
+        EDAplotX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothed))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))        
+        ggplotly(p = EDAplotX) %>% config(scrollZoom = TRUE)
+        })
       
-      EDAplotbwX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothedbw))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))
-      output$EDAplotBW <- renderPlotly(ggplotly(p = EDAplotbwX) %>% config(scrollZoom = TRUE))
+      output$EDAplotBW <- renderPlotly({
+        validate( need(nrow(dfphysio) > 0, print_nodata_msg()))
+        EDAplotbwX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothedbw))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))
+        ggplotly(p = EDAplotbwX) %>% config(scrollZoom = TRUE)
+        })
     }
   }
   
