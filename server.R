@@ -116,15 +116,15 @@ server = function(input, output, session) {
       }
     }
     # for physio -------
-    # else if (subject == "EDAIBISerial") {
-    #   participants <<- unique(dfphysio %>% group_by(Email) %>% distinct(PID))
-    #   participants$PID[is.na(participants$PID)] <<- "NA"
-    #   if (nrow(participants) > 0) {
-    #     choices <<- setNames(c(1:nrow(participants)),participants$PID)
-    #   } else {
-    #     choices <<- NULL
-    #   }
-    # }
+     else if (subject == "EDAIBISerial") {
+       participants <<- unique(dfphysio %>% group_by(Email) %>% distinct(PID))
+       participants$PID[is.na(participants$PID)] <<- "NA"
+       if (nrow(participants) > 0) {
+         choices <<- setNames(c(1:nrow(participants)),participants$PID)
+       } else {
+         choices <<- NULL
+       }
+     }
     if (!is.null(pid_query)) {
       pid_name <<- pid_query
       pid_query <<- NULL
@@ -162,7 +162,7 @@ server = function(input, output, session) {
     if (!is.null(pid_name)) {
       dfrt <- dfrt %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_name)
       dfsynch <- dfsynch %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_name)
-      # dfphysio<- dfphysio %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_name)
+      dfphysio<- dfphysio %>% filter(Email %in% pid_email) %>% filter(PID %in% pid_name)
     }
     if (subject == "reactiontime") {
       # RT ABILITY PLOT -------
