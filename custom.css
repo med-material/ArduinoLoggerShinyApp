@@ -11,6 +11,16 @@ footer {
     margin-top: 20px;
 }
 
+.shiny-output-error-validation {
+
+    color: #888;
+    text-align: center;
+    width: 100%;
+    padding-top: 5em;
+    background-color: #EFEFEF;
+    background: no-repeat center url("placeholder-graph.svg");
+}
+
 .vizcontrols-explainer {
     background: no-repeat url("pan-zoom.svg");
     height: 35px;

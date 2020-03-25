@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="104.87312"
+   height="104.87311"
+   viewBox="0 0 27.747679 27.747677"
+   version="1.1"
+   id="svg1487"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="placeholder-graph.svg">
+  <defs
+     id="defs1481" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="15.794893"
+     inkscape:cy="74.479783"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata1484">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-77.596401,-98.673783)">
+    <path
+       inkscape:connector-curvature="0"
+       d="M 102.261,98.673783 H 80.679478 c -1.695693,0 -3.083077,1.387357 -3.083077,3.083097 v 21.58149 c 0,1.69568 1.387384,3.08309 3.083077,3.08309 H 102.261 c 1.6957,0 3.08308,-1.38741 3.08308,-3.08309 v -21.58149 c 0,-1.69574 -1.38738,-3.083097 -3.08308,-3.083097 z M 86.845627,120.25533 H 83.76255 v -10.7908 h 3.083077 z m 6.16615,0 h -3.083072 v -15.41542 h 3.083072 z m 6.166154,0 h -3.083077 v -6.16619 h 3.083077 z"
+       id="path52"
+       style="fill:#b1b1b1;fill-opacity:1;stroke-width:0.26458335" />
+  </g>
+</svg>
