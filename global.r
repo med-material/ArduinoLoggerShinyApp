@@ -98,7 +98,12 @@ RefreshDataSets <- function(colfilter) {
     dfEDAStart <<- rename(dfEDAStart, EDAStartMillis = Millis)
     dfphysio<<-merge(dfphysio,dfEDAStart,by=c("TimeStamp","PID","Comment","Email"))
     dfphysio$TimeLine<<-(dfphysio$Millis-dfphysio$EDAStartMillis)/1000
-    dfphysio$EDAsmoothed<<-c(rep(NA,9),rollmean(dfphysio$EDA,10))
+    if (nrow(dfphysio) > 9 ) {
+      # The session terminates if rollmean() is called on dataframes with less than 10 rows.
+      dfphysio$EDAsmoothed<<-c(rep(NA,9),rollmean(dfphysio$EDA,10))
+    } else {
+      dfphysio$EDAsmoothed<<- 0
+    }
     dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
     
     dfIBI<<-dfphysio[dfphysio$IBI!=0,]
