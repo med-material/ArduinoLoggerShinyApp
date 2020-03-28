@@ -3,7 +3,7 @@ library(Rmisc)
 library(reshape2)
 library(dplyr)
 library(tidyr)
-library(RHRV)
+# library(RHRV) #doesn't work on ShineyServer
 
 server = function(input, output, session) {
   
@@ -277,6 +277,8 @@ server = function(input, output, session) {
         ggplotly(p = IBIplot) %>% config(scrollZoom = TRUE)
       })
       
+      # output$HRVtable <- renderDataTable(dfHRV)
+      
       output$EDAplot <- renderPlotly({
         validate( need(nrow(dfphysio) > 0, print_nodata_msg()))
         EDAplotX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothed))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))        
@@ -288,6 +290,7 @@ server = function(input, output, session) {
         EDAplotbwX = ggplot(dfphysio,aes(x=TimeLine,y=EDAsmoothedbw))+ylab("conductivity in...?")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+facet_grid(rows=vars(TimeStamp))
         ggplotly(p = EDAplotbwX) %>% config(scrollZoom = TRUE)
         })
+      
     }
   }
   

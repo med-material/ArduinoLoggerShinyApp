@@ -76,7 +76,7 @@ RefreshDataSets <- function(colfilter) {
     dfrt$Modal <<- as.factor(dfrt$Modal)
   }
   # REFRESH SYNCH DATASET
-  if (colfilter %in% dfsynch$Email) {  
+  if (colfilter %in% c("NA",dfsynch$Email)) {  
     dfsynch$run <<-floor(dfsynch$TrialNo/21)
     dfsynch$runTrialNo<<-ifelse(dfsynch$TrialNo>20,dfsynch$TrialNo-20,dfsynch$TrialNo)
     dfsynch$absSynchOffset<<-abs(dfsynch$ReactionTime)

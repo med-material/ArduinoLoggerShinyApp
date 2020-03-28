@@ -65,8 +65,10 @@ ui <- fluidPage(
 #EDAIBIserial panel ----------
     tabPanel(value = "EDAIBISerial", strong("Physiological Data"),
              plotlyOutput("physioIBIplot"),
+             # dataTableOutput('HRVtable'),
              plotlyOutput("EDAplotBW"),
              plotlyOutput("EDAplot"),
+             # p()
              tags$div(class = "vizcontrols-explainer")
     ),
   tags$footer()
