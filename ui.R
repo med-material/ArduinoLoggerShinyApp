@@ -67,7 +67,7 @@ ui <- fluidPage(
              plotlyOutput("physioIBIplot"),
              
              tableOutput('HRVtable'),
-             # plotOutput("powerBandPlot"),
+             plotOutput("powerBandPlot"),
              plotOutput("poincarePlot"),
              plotlyOutput("EDAplot"),
              plotlyOutput("EDAplotBW"),

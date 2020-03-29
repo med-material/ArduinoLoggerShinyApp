@@ -345,8 +345,10 @@ server = function(input, output, session) {
       
       # ###################
       # #Plots the powerband calculations from above, ymax can be changed to change the y-max value on ULF VLF LF and HF graphs while ymaxratio changes the max y value on the LF/HF graph.
-      powerBandPlotX<-PlotPowerBand(hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
-      output$powerBandPlot <- renderPlot({print(powerBandPlotX)})
+      powerBandPlotX<<-PlotPowerBand(hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
+      powerBandPlotXRec<<-recordPlot()
+      dev.off()
+      output$powerBandPlot <<- renderPlot({print(powerBandPlotXRec)})
       
 
       
