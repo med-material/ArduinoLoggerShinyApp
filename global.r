@@ -1,34 +1,13 @@
 library(RMySQL)
 library(plyr)
 library(ggplot2)
+
 library(seewave)
 library(zoo)
-library(waveslim)
-library(lomb)
+library(RHRV)
 library("nonlinearTseries")
-###### source all of RHRV ----
-# setwd("RHRV/")
-# files.sources = list.files()
-# sapply(files.sources, source)
-# setwd("..")
-###### done with sourcing all of RHRV
 
-# source("HRVhelpers/CreateHRVData.R")
-# source("HRVhelpers/LoadBeatAscii.R")
-# source("HRVhelpers/BuildNIHR.R")
-# 
-# source("HRVhelpers/checkingStructure.R")
-# source("HRVhelpers/FilterNIHR.R")
-# source("HRVhelpers/CreateTimeAnalysis.R")
-# source("HRVhelpers/CreateFreqAnalysis.R")
-# source("HRVhelpers/CreateNonLinearAnalysis.R")
-# source("HRVhelpers/CalculatePowerBand.R")
-# source("HRVhelpers/NonlinearityTest.R")
-# source("HRVhelpers/poincarePlot.R")
-# source("HRVhelpers/InterpolateNIHR.R")
-# source("HRVhelpers/PlotNIHR.R")
-# source("HRVhelpers/PlotPowerBand.R")
-# # source("HRVhelpers/VerboseStuff.R")
+
 # source("HRVhelpers/CalculateCorrelationDimension.R")
 
 
@@ -132,7 +111,8 @@ RefreshDataSets <- function(colfilter) {
       dfphysio$EDAsmoothed<<- 0
     }
     dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
-    # dfIBI <- dfphysio[dfphysio$IBI!=0,]
+    dfIBI <<- dfphysio[dfphysio$IBI!=0,]
+    dfIBI$TimeLine<<-cumsum(c(0, dfIBI[2:nrow(dfIBI),]$IBI/1000))
     dfIBIstart<- dfphysio[dfphysio$IBI!=0,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
     dfIBIstart <- rename(dfIBIstart, IBIStartMillis = Millis)
     

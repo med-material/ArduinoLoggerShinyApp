@@ -63,16 +63,12 @@ avgLFHF <<- round(avgLF/avgHF,1)
 SD1<<-round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1,1)
 SD2<<-round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2,1)
 
-# types<-c("Time domain","","","Frequency domain","","","Non-linear","")
-# measures<-c("SDNN","pNN50","rMSSD","avg LF","avg HF","avg LF/HF","SD1","SD2")
-# mvalues<-c(SDNN,pNN50,rMSSD,avgLF,avgHF,avgLFHF,SD1,SD2)
-# dfHRV<<-data.frame(cbind(types,measures,mvalues))
+types<-c("Time domain","","","Frequency domain","","","Non-linear","")
+measures<-c("SDNN","pNN50","rMSSD","avg LF","avg HF","avg LF/HF","SD1","SD2")
+mvalues<-c(SDNN,pNN50,rMSSD,avgLF,avgHF,avgLFHF,SD1,SD2)
+dfHRV<<-data.frame(cbind(types,measures,mvalues))
 
-# #create a  Poincaré plot
-# IBI$nextIBI<-c(NA,IBI$IBI[1:nrow(IBI)-1])
-# hd = hrv.data
-# hd = CreateNonLinearAnalysis(hd)
-# hd = PoincarePlot(hd, doPlot = T)
+
 
 #Plots the powerband calculations from above, ymax can be changed to change the y-max value on ULF VLF LF and HF graphs while ymaxratio changes the max y value on the LF/HF graph.
 powerBandPlot<<-PlotPowerBand(hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
