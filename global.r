@@ -7,10 +7,10 @@ library(waveslim)
 library(lomb)
 library("nonlinearTseries")
 ###### source all of RHRV ----
-setwd("RHRV/")
-files.sources = list.files()
-sapply(files.sources, source)
-setwd("..")
+# setwd("RHRV/")
+# files.sources = list.files()
+# sapply(files.sources, source)
+# setwd("..")
 ###### done with sourcing all of RHRV
 
 # source("HRVhelpers/CreateHRVData.R")
