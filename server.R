@@ -286,14 +286,14 @@ server = function(input, output, session) {
       names(tsIBI)<<-c('beats')
       # 
       # #need to write data back to file as I couldn't figure out how to simply inject it into the data structure, the file should be safe to delete after this
-      write.table(tsIBI$beats, file = "TSibi.txt", sep = ",", qmethod = "double", row.names = FALSE, col.names = FALSE)
+      #beatAscii <- write.table(tsIBI$beats, file = "", sep = ",", qmethod = "double", row.names = FALSE, col.names = FALSE)
       # 
       # #create data structure
        
        hrv.data  <<- CreateHRVData()
       # 
       # #load the beat data
-      hrv.data <<- LoadBeatAscii(hrv.data, "TSibi.txt")
+      hrv.data <<- LoadBeatString(hrv.data, tsIBI$beats)
       # 
       # #make a non-interpolated plot of the heart rate
       hrv.data <<- BuildNIHR(hrv.data)

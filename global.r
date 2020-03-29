@@ -9,7 +9,8 @@ library("nonlinearTseries")
 
 
 # source("HRVhelpers/CalculateCorrelationDimension.R")
-
+source("LoadBeatString.R")
+pdf(NULL)
 
 my_data <- read.csv("credentials.csv", header=TRUE,sep=",", colClasses=c("character","character","character","character"))
 
