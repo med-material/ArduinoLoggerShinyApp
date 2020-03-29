@@ -303,7 +303,7 @@ server = function(input, output, session) {
       # PlotNIHR(hrv.data, main = "niHR",Tags = "all")
       # 
       # #Create a time analysis, the values here are the same as the default  
-      hrv.data <<- CreateTimeAnalysis(hrv.data, size = 200, interval = 7.8125)
+      hrv.data <<- CreateTimeAnalysis(hrv.data, size = floor(max(dfphysio$TimeLine)), interval = 7.8125)
       # 
       # #Do the frequency analysis
       hrv.data <<- CreateFreqAnalysis(hrv.data)
