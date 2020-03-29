@@ -3,6 +3,24 @@ library(plyr)
 library(ggplot2)
 library(seewave)
 library(zoo)
+library("nonlinearTseries")
+source("HRVhelpers/CreateHRVData.R")
+source("HRVhelpers/LoadBeatAscii.R")
+source("HRVhelpers/BuildNIHR.R")
+
+source("HRVhelpers/checkingStructure.R")
+source("HRVhelpers/FilterNIHR.R")
+source("HRVhelpers/CreateTimeAnalysis.R")
+source("HRVhelpers/CreateFreqAnalysis.R")
+source("HRVhelpers/CreateNonLinearAnalysis.R")
+source("HRVhelpers/CalculatePowerBand.R")
+source("HRVhelpers/NonlinearityTest.R")
+source("HRVhelpers/poincarePlot.R")
+source("HRVhelpers/InterpolateNIHR.R")
+source("HRVhelpers/PlotNIHR.R")
+source("HRVhelpers/PlotPowerBand.R")
+# source("HRVhelpers/VerboseStuff.R")
+source("HRVhelpers/CalculateCorrelationDimension.R")
 
 
 my_data <- read.csv("credentials.csv", header=TRUE,sep=",", colClasses=c("character","character","character","character"))
@@ -105,12 +123,12 @@ RefreshDataSets <- function(colfilter) {
       dfphysio$EDAsmoothed<<- 0
     }
     dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
-    
-    dfIBIstart<- dfIBI[,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
+    # dfIBI <- dfphysio[dfphysio$IBI!=0,]
+    dfIBIstart<- dfphysio[dfphysio$IBI!=0,c("TimeStamp","Email","PID","Comment","Millis")] %>% group_by(Email,TimeStamp) %>% slice(which.min(Millis))
     dfIBIstart <- rename(dfIBIstart, IBIStartMillis = Millis)
     
     dfphysio<<-merge(dfphysio,dfIBIstart,by=c("TimeStamp","PID","Comment","Email"))
-    dfphysio$start<<-dfphysio$Millis-dfIBI$IBIStartMillis
+    dfphysio$start<<-dfphysio$Millis-dfphysio$IBIStartMillis
   }
 
 }

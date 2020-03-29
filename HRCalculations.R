@@ -1,41 +1,12 @@
-# library('RHRV')
+library('RHRV')
 # library(here)
 # source("CreateTimeAnalysisByEpisodes.R")
-library("nonlinearTseries")
-source("HRVhelpers/CreateHRVData.R")
-source("HRVhelpers/LoadBeatAscii.R")
-source("HRVhelpers/BuildNIHR.R")
 
-source("HRVhelpers/checkingStructure.R")
-source("HRVhelpers/FilterNIHR.R")
-source("HRVhelpers/CreateTimeAnalysis.R")
-source("HRVhelpers/CreateFreqAnalysis.R")
-source("HRVhelpers/CreateNonLinearAnalysis.R")
-source("HRVhelpers/CalculatePowerBand.R")
-source("HRVhelpers/NonlinearityTest.R")
-source("HRVhelpers/poincarePlot.R")
-source("HRVhelpers/InterpolateNIHR.R")
-source("HRVhelpers/PlotNIHR.R")
-source("HRVhelpers/PlotPowerBand.R")
-
-VerboseMessage = function(verbose, msg, symbol="", tab=""){
-  if (verbose) {
-    message(paste0(tab, symbol, " ", msg, " ", symbol))
-  }
-}
-
-HandleVerboseArgument = function(HRVData, verbose) {
-  if (!is.null(verbose)) {
-    warning(DeprecatedArgMessage("verbose", "SetVerbose()"))
-    HRVData = SetVerbose(HRVData, verbose)
-  }
-  HRVData  
-}
 
 #import IBI data in milliseconds (three digits e.g 569, no decimal) from file
 
 #The line below is not needed when we already have the IBI ready
-# dfIBI<-read.csv(file = "IBI clean.txt") #insert .txt file name here
+ dfIBI<-read.csv(file = "IBI clean.txt") #insert .txt file name here
 
 #Calculate the time each heart beat happened  
 tsIBI<-as.data.frame(cumsum(c(0, dfIBI[2:nrow(dfIBI),]/1000)))
@@ -78,24 +49,24 @@ hrv.data=PoincarePlot(hrv.data,indexNonLinearAnalysis = 1,timeLag = 1,confidence
 hd = hrv.data
 hd = CreateNonLinearAnalysis(hd)
 hd = PoincarePlot(hd, doPlot = T)
-poincareRecord<-recordPlot()
+poincareRecordplot<<-recordPlot()
 dev.off()
 
 
 #Put all the values into a single variable each for easier display  
-SDNN <- round(hrv.data$TimeAnalysis[[1]]$SDNN,1)
-pNN50 <- round(hrv.data$TimeAnalysis[[1]]$pNN50,1)
-rMSSD <- round(hrv.data$TimeAnalysis[[1]]$rMSSD,1)
-avgLF <- round(mean(hrv.data$FreqAnalysis[[1]]$LF),1)
-avgHF <- round(mean(hrv.data$FreqAnalysis[[1]]$HF),1)
-avgLFHF <- round(avgLF/avgHF,1)
-SD1<-round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1,1)
-SD2<-round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2,1)
+SDNN <<- round(hrv.data$TimeAnalysis[[1]]$SDNN,1)
+pNN50 <<- round(hrv.data$TimeAnalysis[[1]]$pNN50,1)
+rMSSD <<- round(hrv.data$TimeAnalysis[[1]]$rMSSD,1)
+avgLF <<- round(mean(hrv.data$FreqAnalysis[[1]]$LF),1)
+avgHF <<- round(mean(hrv.data$FreqAnalysis[[1]]$HF),1)
+avgLFHF <<- round(avgLF/avgHF,1)
+SD1<<-round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1,1)
+SD2<<-round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2,1)
 
-types<-c("Time domain","","","Frequency domain","","","Non-linear","")
-measures<-c("SDNN","pNN50","rMSSD","avg LF","avg HF","avg LF/HF","SD1","SD2")
-mvalues<-c(SDNN,pNN50,rMSSD,avgLF,avgHF,avgLFHF,SD1,SD2)
-mdf<-data.frame(cbind(types,measures,mvalues))
+# types<-c("Time domain","","","Frequency domain","","","Non-linear","")
+# measures<-c("SDNN","pNN50","rMSSD","avg LF","avg HF","avg LF/HF","SD1","SD2")
+# mvalues<-c(SDNN,pNN50,rMSSD,avgLF,avgHF,avgLFHF,SD1,SD2)
+# dfHRV<<-data.frame(cbind(types,measures,mvalues))
 
 # #create a  Poincaré plot
 # IBI$nextIBI<-c(NA,IBI$IBI[1:nrow(IBI)-1])
@@ -104,7 +75,7 @@ mdf<-data.frame(cbind(types,measures,mvalues))
 # hd = PoincarePlot(hd, doPlot = T)
 
 #Plots the powerband calculations from above, ymax can be changed to change the y-max value on ULF VLF LF and HF graphs while ymaxratio changes the max y value on the LF/HF graph.
-PlotPowerBand(hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
+powerBandPlot<<-PlotPowerBand(hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
 
 # see here for more details on size of windows, shifts etc.
 # https://cran.r-project.org/web/packages/RHRV/vignettes/RHRV-quickstart.html
