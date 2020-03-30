@@ -24,8 +24,8 @@ server = function(input, output, session) {
     msg <- paste("No ", subject, " data to show for ", sep='')
     
     mail <- all_accounts[[1]]
-    if (!is.null(pid_email)) {
-      mail <- pid_email
+    if (is.null(input$pidChooser)) {
+      mail <- input$emailSelect
     }
     msg <- paste(msg, mail, sep='')
     
