@@ -277,7 +277,7 @@ server = function(input, output, session) {
       # IBI<<-dfIBI[,c("IBI")]
        # source("HRCalculations.R")
       output$physioIBIplot <- renderPlotly({
-        validate( need(nrow(dfIBI) > 0, print_nodata_msg()))
+        validate( need(nrow(dfphysio) > 0, print_nodata_msg()))
         IBIplot = ggplot(dfIBI,aes(x=TimeLine,y=IBI))+geom_point()+ylab("inter-beat interval in ms")+xlab("time line in seconds")+geom_line()+theme_bw() + scale_y_continuous(breaks=seq(0,max(dfIBI$IBI),200))+scale_x_continuous(breaks=seq(0,max(dfIBI$TimeLine),1))+ expand_limits(x = 0, y = 0)+geom_hline(yintercept=300,color='red')+geom_hline(yintercept=2000, color='green')
         ggplotly(p = IBIplot) %>% config(scrollZoom = TRUE)})
       
@@ -340,7 +340,10 @@ server = function(input, output, session) {
       dfHRV<<-data.frame(cbind(types,measures,mvalues))
       dfHRV$types<-as.character(dfHRV$types)
       dfHRV$measures<-as.character(dfHRV$measures)
-      output$HRVtable <- renderTable(dfHRV)
+      output$HRVtable <- renderTable({
+        validate( need(nrow(dfphysio) > 0, print_nodata_msg()))
+        dfHRV
+        })
       
       
       # ###################
@@ -348,7 +351,10 @@ server = function(input, output, session) {
       powerBandPlotX<<-PlotPowerBand(hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
       powerBandPlotXRec<<-recordPlot()
       dev.off()
-      output$powerBandPlot <<- renderPlot({print(powerBandPlotXRec)})
+      output$powerBandPlot <<- renderPlot({
+        validate( need(nrow(dfphysio) > 0, print_nodata_msg()))
+        print(powerBandPlotXRec)
+        })
       
 
       
