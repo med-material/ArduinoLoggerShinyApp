@@ -76,14 +76,14 @@ RefreshDataSets <- function(colfilter) {
   dfphysio <<- RetreiveDataSet("EDAIBISerial","Email",colfilter)
 
   # REFRESH REACTION TIME DATASET  
-  if (colfilter %in% dfrt$Email) {
+  if (nrow(dfrt) > 0) {
     dfrt$Intens<<-as.factor(dfrt$Intens)
     dfrt$Intens<<-factor(dfrt$Intens,levels = c("Low", "High"))
     dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits=-1)
     dfrt$Modal <<- as.factor(dfrt$Modal)
   }
   # REFRESH SYNCH DATASET
-  if (colfilter %in% c("NA",dfsynch$Email)) {  
+  if (nrow(dfsynch) > 0) {  
     dfsynch$run <<-floor(dfsynch$TrialNo/21)
     dfsynch$runTrialNo<<-ifelse(dfsynch$TrialNo>20,dfsynch$TrialNo-20,dfsynch$TrialNo)
     dfsynch$absSynchOffset<<-abs(dfsynch$ReactionTime)
@@ -93,7 +93,8 @@ RefreshDataSets <- function(colfilter) {
     dfsynch$MusicalAbility<<-as.factor(dfsynch$MusicalAbility) 
   }
   # REFRESH physio DATASET
-  if (colfilter %in% dfphysio$Email) {
+  if (nrow(dfphysio) > 9) {
+    # The session terminates if rollmean() is called on dataframes with less than 10 rows.
     dfphysio$Millis<<-as.integer(dfphysio$Millis)
     dfphysio$EDA<<-as.integer(dfphysio$EDA)
     dfphysio$IBI<<-as.integer(dfphysio$IBI)
@@ -105,12 +106,7 @@ RefreshDataSets <- function(colfilter) {
     dfEDAStart <<- rename(dfEDAStart, EDAStartMillis = Millis)
     dfphysio<<-merge(dfphysio,dfEDAStart,by=c("TimeStamp","PID","Comment","Email"))
     dfphysio$TimeLine<<-(dfphysio$Millis-dfphysio$EDAStartMillis)/1000
-    if (nrow(dfphysio) > 9 ) {
-      # The session terminates if rollmean() is called on dataframes with less than 10 rows.
-      dfphysio$EDAsmoothed<<-c(rep(NA,9),rollmean(dfphysio$EDA,10))
-    } else {
-      dfphysio$EDAsmoothed<<- 0
-    }
+    dfphysio$EDAsmoothed<<-c(rep(NA,9),rollmean(dfphysio$EDA,10))
     dfphysio$EDAsmoothedbw<<-bwfilter(dfphysio$EDA,f=100,n=5,to=1)
     dfIBI <<- dfphysio[dfphysio$IBI!=0,]
     dfIBI$TimeLine<<-cumsum(c(0, dfIBI[2:nrow(dfIBI),]$IBI/1000))
