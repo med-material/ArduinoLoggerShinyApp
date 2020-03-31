@@ -37,7 +37,7 @@ server = function(input, output, session) {
   }
   
   print_IBI_data_error_msg <- function() {
-    msg <- paste("IBI Data not valid for selection")
+    msg <- paste("IBI Data not valid for selection. (")
     
     mail <- all_accounts[[1]]
     if (!is.null(input$emailSelect)) {
@@ -48,7 +48,7 @@ server = function(input, output, session) {
     if (!is.null(pid_name)) {
       msg <- paste(msg, ", Participant ", pid_name, sep='')
     }
-    msg <- paste(msg, ".", sep='')
+    msg <- paste(msg, ").", sep='')
     
   }  
   
