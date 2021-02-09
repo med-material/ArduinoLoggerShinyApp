@@ -338,6 +338,9 @@ server <- function(input, output, session) {
       })
 
       # ##### HRV stuff -------
+      if (nrow(dfIBI) < 9) {
+        return()
+      }
       tsIBI <<- as.data.frame(cumsum(c(0, dfIBI[2:nrow(dfIBI), ]$IBI / 1000)))
       names(tsIBI) <<- c("beats")
       #
