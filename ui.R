@@ -6,7 +6,7 @@ ui <- fluidPage(
   includeCSS("custom.css"),
   useShinyjs(),
   fluidRow(
-    column(8, titlePanel("Arduino Logger Visualizer (Cohort 2020)")),
+    column(8, titlePanel("Arduino Logger Visualizer (Cohort 2021)")),
     column(
       4,
       column(1, style = "margin-top : 20px; text-align: right;", icon("user", class = "fa-2x", lib = "font-awesome")),
