@@ -111,15 +111,17 @@ RefreshDataSets <- function(colfilter) {
     dfphysio$TimeLine <<- (dfphysio$Millis - dfphysio$EDAStartMillis) / 1000
     dfphysio$EDAsmoothed <<- c(rep(NA, 9), rollmean(dfphysio$EDA, 10))
     dfphysio$EDAsmoothedbw <<- bwfilter(dfphysio$EDA, f = 100, n = 5, to = 1)
-    dfIBI <<- dfphysio[dfphysio$IBI != 0, ]
-    dfIBI$TimeLine <<- cumsum(c(0, dfIBI[2:nrow(dfIBI), ]$IBI / 1000))
-    dfIBIstart <- dfphysio[dfphysio$IBI != 0, c("TimeStamp", "Email", "PID", "Comment", "Millis")] %>%
-      group_by(Email, TimeStamp) %>%
-      slice(which.min(Millis))
-    dfIBIstart <- rename(dfIBIstart, IBIStartMillis = Millis)
+    dfIBI <<- dfphysio %>% filter(IBI != 0)
+    if (nrow(dfIBI) > 9) {
+      dfIBI$TimeLine <<- cumsum(c(0, dfIBI[2:nrow(dfIBI), ]$IBI / 1000))
+      dfIBIstart <- dfphysio[dfphysio$IBI != 0, c("TimeStamp", "Email", "PID", "Comment", "Millis")] %>%
+        group_by(Email, TimeStamp) %>%
+        slice(which.min(Millis))
+      dfIBIstart <- rename(dfIBIstart, IBIStartMillis = Millis)
 
     dfphysio <<- merge(dfphysio, dfIBIstart, by = c("TimeStamp", "PID", "Comment", "Email"))
     dfphysio$start <<- dfphysio$Millis - dfphysio$IBIStartMillis
+    }
   }
 }
 
