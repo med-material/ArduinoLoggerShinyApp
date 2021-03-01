@@ -123,8 +123,12 @@ server <- function(input, output, session) {
       RefreshDataSets(input$emailSelect)
 
       UpdatePIDSelection()
-      
-      dfrt_gf <<- dfrt_g %>% filter(`Your student email` == input$emailSelect)
+      print(input$emailSelect)
+      if (input$emailSelect == "NA") {
+        dfrt_gf <<- dfrt_g
+      } else {
+        dfrt_gf <<- dfrt_g %>% filter(`Your student email` == input$emailSelect)
+      }
       UpdateVisualizations()
     }
   )
