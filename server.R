@@ -54,6 +54,10 @@ server <- function(input, output, session) {
     }
     if (!is.null(query[["pid"]])) {
       pid <- query[["pid"]]
+      # in case no PID was specified, the URL uses "NULL" but the data uses "NA".
+      if (pid == "NULL") {
+        pid = "NA"
+      }
       pid_query <<- pid
       pid_name <<- pid
     }
