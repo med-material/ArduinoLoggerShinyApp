@@ -205,6 +205,7 @@ server <- function(input, output, session) {
     print(paste("dfsynch nrow:", nrow(dfsynch)))
     print(paste("dfphysio nrow:", nrow(dfphysio)))
     print(paste("dfrt_gf nrow:", nrow(dfrt_gf)))
+    print(paste("dfIBI nrow:", nrow(dfIBI)))
 
     # Filter visualization data based on pid_name
     if (!is.null(pid_name)) {
@@ -353,7 +354,7 @@ server <- function(input, output, session) {
       })
 
       # ##### HRV stuff -------
-      if (nrow(dfIBI) < 9) {
+      if (nrow(dfIBI) < 1000) {
         return()
       }
       tsIBI <<- as.data.frame(cumsum(c(0, dfIBI[2:nrow(dfIBI), ]$IBI / 1000)))
