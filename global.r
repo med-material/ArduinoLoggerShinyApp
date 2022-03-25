@@ -82,6 +82,8 @@ RefreshDataSets <- function(colfilter) {
     dfrt$Intens <<- factor(dfrt$Intens, levels = c("Low", "High"))
     dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits = -1)
     dfrt$Modal <<- as.factor(dfrt$Modal)
+    dfrt$RunningTrialNum
+    dfrt <<- dfrt %>% arrange(TimeStamp) %>% select(Email,SessionID) %>% distinct() %>% mutate(runningTrialNum=1:n()) %>% merge(dfrt)
   }
   # REFRESH SYNCH DATASET
   if (nrow(dfsynch) > 0) {

@@ -225,9 +225,8 @@ server <- function(input, output, session) {
 
       output$rtTrialPlot <- renderPlotly({
         validate(need(nrow(dfrt) > 0, print_nodata_msg()))
-
-        plot_ly(dfrt, x = ~ dfrt$TrialNo, y = ~ dfrt$ReactionTime) %>%
-          add_trace(type = "scatter", mode = "markers", name = ~Modal, color = ~Modal, colors = colorPalette) %>%
+        plot_ly(dfrt %>% group_by(SessionID), x = ~ dfrt$TrialNo, y = ~ dfrt$ReactionTime) %>%
+          add_trace(type = "scatter", mode = "markers+lines", name = ~paste(Modal,runningTrialNum), color = ~Modal, colors = colorPalette) %>%
           layout(showlegend = TRUE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0, 500), title = "Reaction Time (ms)")) %>%
           config(scrollZoom = TRUE)
       })
