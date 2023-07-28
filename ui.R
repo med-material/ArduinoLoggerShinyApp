@@ -6,7 +6,7 @@ ui <- fluidPage(
   includeCSS("custom.css"),
   useShinyjs(),
   fluidRow(
-    column(8, titlePanel("Arduino Logger Visualizer (Cohort 2021)")),
+    column(8, titlePanel("Arduino Logger Visualizer")),
     column(
       4,
       column(1, style = "margin-top : 20px; text-align: right;", icon("user", class = "fa-2x", lib = "font-awesome")),
@@ -88,16 +88,16 @@ ui <- fluidPage(
       tags$div(class = "vizcontrols-explainer")
     ),
     # Web panel ----------
-    tabPanel(
-      value = "GSheetReactionTime", strong("Reaction Time (Google Sheets)"),
-      strong("Reaction Time only"),
-      plotlyOutput("gsheetsreactplot"),
-      strong("Reaction Time + another task"),
-      plotlyOutput("gsheetsreactplot2"),
-      
-      # p()
-      tags$div(class = "vizcontrols-explainer")
-    ),
+    # tabPanel(
+    #   value = "GSheetReactionTime", strong("Reaction Time (Google Sheets)"),
+    #   strong("Reaction Time only"),
+    #   plotlyOutput("gsheetsreactplot"),
+    #   strong("Reaction Time + another task"),
+    #   plotlyOutput("gsheetsreactplot2"),
+    #   
+    #   # p()
+    #   tags$div(class = "vizcontrols-explainer")
+    # ),
     tags$footer()
   )
 )
