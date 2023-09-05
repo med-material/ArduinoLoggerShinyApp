@@ -3,17 +3,13 @@ library(Rmisc)
 library(reshape2)
 library(dplyr)
 library(tidyr)
-library(gsheet)
 # library(stats)
 # library(RHRV) #doesn't work on ShinyServer
-
 
 server <- function(input, output, session) {
 
   # VARIABLES
-  dfrt_g<<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1jZgv08ud058pIUk-MPrBAH9_2hXKokg-VA6ejNn06rk/edit?usp=sharing')
-  dfrt_g<<-melt(dfrt_g, id.vars=c(1:5))
-  
+
   # define colors to use in plots.
   colorPalette <- c("#c94232", "#239a37")
 
@@ -61,13 +57,12 @@ server <- function(input, output, session) {
       pid_query <<- pid
       pid_name <<- pid
     }
-    gsheet_accounts = unique(dfrt_g$`Your student email`)
     if (!is.null(query[["email"]])) {
       sel <- query[["email"]]
       pid_email <- query[["email"]]
-      updateSelectInput(session, "emailSelect", choices = c(all_accounts,gsheet_accounts, "Everyone\'s Data" = "NA"), selected = sel)
+      updateSelectInput(session, "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"), selected = sel)
     } else {
-      updateSelectInput(session, "emailSelect", choices = c(all_accounts, gsheet_accounts, "Everyone\'s Data" = "NA"))
+      updateSelectInput(session, "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
     }
   })
 
@@ -127,8 +122,7 @@ server <- function(input, output, session) {
       RefreshDataSets(input$emailSelect)
 
       UpdatePIDSelection()
-      
-      dfrt_gf <<- dfrt_g %>% filter(`Your student email` == input$emailSelect)
+
       UpdateVisualizations()
     }
   )
@@ -200,8 +194,8 @@ server <- function(input, output, session) {
     print(paste("dfrt nrow:", nrow(dfrt)))
     print(paste("dfsynch nrow:", nrow(dfsynch)))
     print(paste("dfphysio nrow:", nrow(dfphysio)))
-    print(paste("dfrt_gf nrow:", nrow(dfrt_gf)))
     print(paste("dfIBI nrow:", nrow(dfIBI)))
+
 
     # Filter visualization data based on pid_name
     if (!is.null(pid_name)) {
@@ -462,18 +456,6 @@ server <- function(input, output, session) {
           expand_limits(x = 0, y = 0) +
           facet_grid(rows = vars(TimeStamp))
         ggplotly(p = EDAplotbwX) %>% config(scrollZoom = TRUE)
-      })
-    } else if (subject == "GSheetReactionTime") {
-      output$gsheetsreactplot <- renderPlotly({
-        validate(need(nrow(dfrt_gf %>% filter(task=="reaction time only")) > 0, print_nodata_msg()))
-        dfrt_gf %>% filter(task=="reaction time only") %>%
-          ggplot(aes(value,color=factor(intensity))) +geom_density()+scale_x_continuous(limits = c(-50, 800),breaks = seq(0, 800, by = 50))+xlab("reaction time in ms")+theme_bw()+facet_grid(rows=vars(modality))
-      })
-      
-      output$gsheetsreactplot2 <- renderPlotly({
-        validate(need(nrow(dfrt_gf %>% filter(task!="reaction time only")) > 0, "No data available here."))
-        dfrt_gf %>% filter(task!="reaction time only") %>%
-          ggplot(aes(value,color=factor(intensity))) +geom_density()+scale_x_continuous(limits = c(-50, 800),breaks = seq(0, 800, by = 50))+xlab("reaction time in ms")+theme_bw()+facet_grid(rows=vars(modality))
       })
     }
   }
