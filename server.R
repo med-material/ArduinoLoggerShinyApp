@@ -194,7 +194,7 @@ server <- function(input, output, session) {
     print(paste("dfrt nrow:", nrow(dfrt)))
     print(paste("dfsynch nrow:", nrow(dfsynch)))
     print(paste("dfphysio nrow:", nrow(dfphysio)))
-    print(paste("dfIBI nrow:", nrow(dfIBI)))
+    # print(paste("dfIBI nrow:", nrow(dfIBI)))
 
 
     # Filter visualization data based on pid_name
