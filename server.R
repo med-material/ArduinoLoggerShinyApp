@@ -12,6 +12,8 @@ server <- function(input, output, session) {
 
   # define colors to use in plots.
   colorPalette <- c("#c94232", "#239a37")
+  
+  csv_data <- callModule(csv_upload, "uploadData")
 
   # a variable we use, if we filter based on pid.
   pid_index <- NULL
@@ -66,6 +68,25 @@ server <- function(input, output, session) {
     }
   })
 
+  observeEvent(input$CsvButton, {
+    insertUI(selector = "#CsvButton", where = "afterEnd",
+             ui = showModal(modalDialog(csv_upload_UI("uploadData"), easyClose = TRUE)))
+  })
+  
+  observeEvent(csv_data$trigger, {
+    req(csv_data$trigger > 0)
+    if (!is.null(csv_data$dfreactiontime)) {
+    dfrt <<- csv_data$dfreactiontime
+    }
+    if (!is.null(csv_data$dfsynch)) {
+    dfsynch <<- csv_data$dfsynch
+    }
+    if (!is.null(csv_data$dfEDAIBISerial)) {
+    dfphysio <<- csv_data$dfEDAIBISerial
+    }
+    RefreshDataLocal()
+  })
+  
   observeEvent(
     {
       input$subjectChooser
