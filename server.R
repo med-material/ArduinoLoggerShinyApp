@@ -14,16 +14,30 @@ server <- function(input, output, session) {
   colorPalette <- c("#c94232", "#239a37")
   
   csv_data <- callModule(csv_upload, "uploadData")
+  
+  r <- reactiveValues(dfsynch = data.frame(),
+                      dfphysio = data.frame(),
+                      dfrt = data.frame(),
+                      dfIBI = data.frame(),
+                      emails = vector(),
+                      tsIBI = data.frame(),
+                      hrv.data = data.frame(),
+                      dfHRV = data.frame(),
+                      pid_index = NULL,
+                      pid_name = NULL,
+                      pid_email = NULL,
+                      pid_query = NULL,
+                      subject = "reactiontime",
+                      participants = NULL,
+                      choices = NULL
+  )
 
   # a variable we use, if we filter based on pid.
-  pid_index <- NULL
-  pid_name <- NULL
-  pid_email <- NULL
-  pid_query <- NULL
-  subject <- "reactiontime"
+
+
 
   print_nodata_msg <- function() {
-    msg <- paste("No ", subject, " data to show for ", sep = "")
+    msg <- paste("No ", r$subject, " data to show for ", sep = "")
 
     mail <- all_accounts[[1]]
     if (is.null(input$pidChooser)) {
@@ -31,15 +45,15 @@ server <- function(input, output, session) {
     }
     msg <- paste(msg, mail, sep = "")
 
-    if (!is.null(pid_name)) {
-      msg <- paste(msg, ", Participant ", pid_name, sep = "")
+    if (!is.null(r$pid_name)) {
+      msg <- paste(msg, ", Participant ", r$pid_name, sep = "")
     }
     msg <- paste(msg, ".", sep = "")
   }
 
   # a variable we use to keep track of the currently available participants
-  participants <- NULL
-  choices <- NULL
+  r$participants <- NULL
+  r$choices <- NULL
 
   observe({
     query <- parseQueryString(session$clientData$url_search)
@@ -47,8 +61,8 @@ server <- function(input, output, session) {
     # Filter visualizations based on the ?pid=XXX URL parameter (based on the tab's value attribute)
     # Change Tab based on the ?subject=XXX URL parameter (based on the tab's value attribute)
     if (!is.null(query[["subject"]])) {
-      subject <<- query[["subject"]]
-      updateTabsetPanel(session, "subjectChooser", selected = subject)
+      r$subject <- query[["subject"]]
+      updateTabsetPanel(session, "subjectChooser", selected = r$subject)
     }
     if (!is.null(query[["pid"]])) {
       pid <- query[["pid"]]
@@ -56,12 +70,12 @@ server <- function(input, output, session) {
       if (pid == "NULL") {
         pid = NULL
       }
-      pid_query <<- pid
-      pid_name <<- pid
+      r$pid_query <- pid
+      r$pid_name <- pid
     }
     if (!is.null(query[["email"]])) {
       sel <- query[["email"]]
-      pid_email <- query[["email"]]
+      r$pid_email <- query[["email"]]
       updateSelectInput(session, "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"), selected = sel)
     } else {
       updateSelectInput(session, "emailSelect", choices = c(all_accounts, "Everyone\'s Data" = "NA"))
@@ -76,15 +90,23 @@ server <- function(input, output, session) {
   observeEvent(csv_data$trigger, {
     req(csv_data$trigger > 0)
     if (!is.null(csv_data$dfreactiontime)) {
-    dfrt <<- csv_data$dfreactiontime
+    r$dfrt <- csv_data$dfreactiontime
+    r$emails = r$dfrt$Email
     }
     if (!is.null(csv_data$dfsynch)) {
-    dfsynch <<- csv_data$dfsynch
+    r$dfsynch <- csv_data$dfsynch
+    r$emails = c(r$emails, r$dfsynch$Email) 
     }
     if (!is.null(csv_data$dfEDAIBISerial)) {
-    dfphysio <<- csv_data$dfEDAIBISerial
+    r$dfphysio <- csv_data$dfEDAIBISerial
+    r$emails = c(r$emails, r$dfphysio$Email)
     }
-    RefreshDataLocal()
+    new = RefreshDataLocal(r$dfrt, r$dfsynch, r$dfphysio, r$dfIBI)
+    r$dfrt = new$dfrt
+    r$dfsynch = new$dfsynch
+    r$dfphysio = new$dfphysio
+    r$dfIBI = new$dfIBI
+    
   })
   
   observeEvent(
@@ -92,10 +114,14 @@ server <- function(input, output, session) {
       input$subjectChooser
     },
     {
-      if (input$subjectChooser != subject) {
-        subject <<- input$subjectChooser
-        UpdatePIDSelection()
-        UpdateVisualizations()
+      if (input$emailSelect %in% c("-1","NA") || length(r$emails) == 0) {
+        return()
+      } else {
+        if (input$subjectChooser != r$subject) {
+          r$subject <- input$subjectChooser
+          UpdatePIDSelection()
+          UpdateVisualizations()
+        }
       }
     }
   )
@@ -108,27 +134,27 @@ server <- function(input, output, session) {
     {
       print(paste("email: ", input$emailSelect))
       # prevent infinite loop - only update pid_name to null, if the value is not already null.
-      if (is.null(pid_name) & is.null(input$pidChooser)) {
-        print(paste("pidChooser: pid_index ", pid_index))
-        print(paste("pidChooser: pid_name ", pid_name))
+      if (is.null(r$pid_name) & is.null(input$pidChooser)) {
+        print(paste("pidChooser: pid_index ", r$pid_index))
+        print(paste("pidChooser: pid_name ", r$pid_name))
         print("ignored..")
         return()
       }
       # CheckboxInputGroup sends an initial NULL value which overrides any query values.
       # Make sure we check whether a specific PID was specified as URL param before.
-      if (!is.null(pid_query)) {
+      if (!is.null(r$pid_query)) {
         print("pid_query exists, ignoring pidChooser")
       } else if (!is.null(input$pidChooser)) {
-        pid_index <<- input$pidChooser
-        pid_name <<- unlist(participants[input$pidChooser, "PID"])
-        pid_email <<- unlist(participants[input$pidChooser, "Email"])
+        r$pid_index <- input$pidChooser
+        r$pid_name <- unlist(r$participants[input$pidChooser, "PID"])
+        r$pid_email <- unlist(r$participants[input$pidChooser, "Email"])
       } else {
-        pid_index <<- NULL
-        pid_name <<- NULL
-        pid_email <<- NULL
+        r$pid_index <- NULL
+        r$pid_name <- NULL
+        r$pid_email <- NULL
       }
-      print(paste("pidChooser: pid_index ", pid_index))
-      print(paste("pidChooser: pid_name ", pid_name))
+      print(paste("pidChooser: pid_index ", r$pid_index))
+      print(paste("pidChooser: pid_name ", r$pid_name))
       UpdateVisualizations()
     }
   )
@@ -137,14 +163,17 @@ server <- function(input, output, session) {
       input$emailSelect
     },
     {
-      if (input$emailSelect == "-1") {
+      
+      if (input$emailSelect %in% c("-1","NA") || length(r$emails) == 0) {
         return()
+      } else {
+        print(paste("emailSelect is: ", input$emailSelect))
+        RefreshDataSets(input$emailSelect)
+    
+        UpdatePIDSelection()
+    
+        UpdateVisualizations()
       }
-      RefreshDataSets(input$emailSelect)
-
-      UpdatePIDSelection()
-
-      UpdateVisualizations()
     }
   )
   observeEvent(input$Param, {
@@ -154,56 +183,56 @@ server <- function(input, output, session) {
   UpdatePIDSelection <- function() {
     # Update PID Choosers to show PID numbers based on the data
     # for synch -------
-    if (subject == "synch") {
-      participants <<- unique(dfsynch %>% group_by(Email) %>% distinct(PID))
-      participants$PID[is.na(participants$PID)] <<- "NA"
-      if (nrow(participants) > 0) {
-        choices <<- setNames(c(1:nrow(participants)), participants$PID)
+    if (r$subject == "synch") {
+      r$participants <- unique(r$dfsynch %>% group_by(Email) %>% distinct(PID))
+      r$participants$PID[is.na(r$participants$PID)] <- "NA"
+      if (nrow(r$participants) > 0) {
+        r$choices <- setNames(c(1:nrow(r$participants)), r$participants$PID)
       } else {
-        choices <<- NULL
+        r$choices <- NULL
       }
     }
     # for reaction time  -------
-    else if (subject == "reactiontime") {
-      participants <<- unique(dfrt %>% group_by(Email) %>% distinct(PID))
-      participants$PID[is.na(participants$PID)] <<- "NA"
-      if (nrow(participants) > 0) {
-        choices <<- setNames(c(1:nrow(participants)), participants$PID)
+    else if (r$subject == "reactiontime") {
+      r$participants <- unique(r$dfrt %>% group_by(Email) %>% distinct(PID))
+      r$participants$PID[is.na(r$participants$PID)] <- "NA"
+      if (nrow(r$participants) > 0) {
+        r$choices <- setNames(c(1:nrow(r$participants)), r$participants$PID)
       } else {
-        choices <<- NULL
+        r$choices <- NULL
       }
     }
     # for physio -------
-    else if (subject == "EDAIBISerial") {
-      participants <<- unique(dfphysio %>% group_by(Email) %>% distinct(PID))
-      participants$PID[is.na(participants$PID)] <<- "NA"
-      if (nrow(participants) > 0) {
-        choices <<- setNames(c(1:nrow(participants)), participants$PID)
+    else if (r$subject == "EDAIBISerial") {
+      r$participants <- unique(r$dfphysio %>% group_by(Email) %>% distinct(PID))
+      r$participants$PID[is.na(r$participants$PID)] <- "NA"
+      if (nrow(r$participants) > 0) {
+        r$choices <- setNames(c(1:nrow(r$participants)), r$participants$PID)
       } else {
-        choices <<- NULL
+        r$choices <- NULL
       }
     }
-    if (!is.null(pid_query)) {
-      pid_name <<- pid_query
-      pid_query <<- NULL
-      pid_index <<- unname(choices[names(choices) == pid_name])
+    if (!is.null(r$pid_query)) {
+      r$pid_name <- r$pid_query
+      r$pid_query <- NULL
+      r$pid_index <- unname(r$choices[names(r$choices) == r$pid_name])
       print(paste("PIDQuery: e-mail", input$emailSelect))
-      print(paste("PIDQuery: pid_name", pid_name))
-      print(paste("PIDQuery: pid_index", pid_index))
-      # pid_name <<- unlist(participants[pid_index,"PID"])
-      # pid_query <<- NULL
+      print(paste("PIDQuery: pid_name", r$pid_name))
+      print(paste("PIDQuery: pid_index", r$pid_index))
+      # pid_name <- unlist(participants[pid_index,"PID"])
+      # pid_query <- NULL
     }
-    print(choices)
-    print(nrow(participants))
-    if (is.null(choices)) {
+    print(r$choices)
+    print(nrow(r$participants))
+    if (is.null(r$choices)) {
       updateCheckboxGroupInput(session, label = "No Participant Data", "pidChooser", choices = NULL, selected = NULL, inline = TRUE)
     }
-    else if (is.null(pid_index)) {
+    else if (is.null(r$pid_index)) {
       print("UpdateCheckbox: pid is null")
-      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = choices, selected = NULL, inline = TRUE)
+      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = r$choices, selected = NULL, inline = TRUE)
     } else {
-      print(paste("UpdateCheckbox: ", pid_index))
-      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = choices, selected = pid_index, inline = TRUE)
+      print(paste("UpdateCheckbox: ", r$pid_index))
+      updateCheckboxGroupInput(session, label = "Filter by Participant:", "pidChooser", choices = r$choices, selected = r$pid_index, inline = TRUE)
     }
   }
 
@@ -211,43 +240,43 @@ server <- function(input, output, session) {
     if (input$emailSelect == "-1") {
       return()
     }
-    print(paste("UpdateVis pid: ", pid_name))
-    print(paste("dfrt nrow:", nrow(dfrt)))
-    print(paste("dfsynch nrow:", nrow(dfsynch)))
-    print(paste("dfphysio nrow:", nrow(dfphysio)))
+    print(paste("UpdateVis pid: ", r$pid_name))
+    print(paste("dfrt nrow:", nrow(r$dfrt)))
+    print(paste("dfsynch nrow:", nrow(r$dfsynch)))
+    print(paste("dfphysio nrow:", nrow(r$dfphysio)))
     # print(paste("dfIBI nrow:", nrow(dfIBI)))
 
 
     # Filter visualization data based on pid_name
-    if (!is.null(pid_name)) {
-      dfrt <- dfrt %>%
-        filter(Email %in% pid_email) %>%
-        filter(PID %in% pid_name)
-      dfsynch <- dfsynch %>%
-        filter(Email %in% pid_email) %>%
-        filter(PID %in% pid_name)
-      dfphysio <- dfphysio %>%
-        filter(Email %in% pid_email) %>%
-        filter(PID %in% pid_name)
+    if (!is.null(r$pid_name)) {
+      r$dfrt <- r$dfrt %>%
+        filter(Email %in% r$pid_email) %>%
+        filter(PID %in% r$pid_name)
+      r$dfsynch <- r$dfsynch %>%
+        filter(Email %in% r$pid_email) %>%
+        filter(PID %in% r$pid_name)
+      r$dfphysio <- r$dfphysio %>%
+        filter(Email %in% r$pid_email) %>%
+        filter(PID %in% r$pid_name)
     }
-    if (subject == "reactiontime") {
+    if (r$subject == "reactiontime") {
       # RT ABILITY PLOT -------
-      print(paste("dfrt filtered nrow:", nrow(dfrt)))
+      print(paste("dfrt filtered nrow:", nrow(r$dfrt)))
 
       output$rtTrialPlot <- renderPlotly({
-        validate(need(nrow(dfrt) > 0, print_nodata_msg()))
-        plot_ly(dfrt %>% group_by(SessionID), x = ~ dfrt$TrialNo, y = ~ dfrt$ReactionTime) %>%
+        validate(need(nrow(r$dfrt) > 0, print_nodata_msg()))
+        plot_ly(r$dfrt %>% group_by(SessionID), x = ~ r$dfrt$TrialNo, y = ~ r$dfrt$ReactionTime) %>%
           add_trace(type = "scatter", mode = "markers+lines", name = ~paste(Modal,runningTrialNum), color = ~Modal, colors = colorPalette) %>%
           layout(showlegend = TRUE, xaxis = list(dtick = 1, title = "Trial Number"), yaxis = list(range = c(0, 500), title = "Reaction Time (ms)")) %>%
           config(scrollZoom = TRUE)
       })
 
       output$rtIntensityPlot <- renderPlotly({
-        validate(need(nrow(dfrt) > 0, print_nodata_msg()))
+        validate(need(nrow(r$dfrt) > 0, print_nodata_msg()))
 
         # IMPROVED INTENSITY PLOT.
         # get medians of each participant/PID combination per group (Intens x Modal)
-        dfmed <- dfrt %>%
+        dfmed <- r$dfrt %>%
           filter(ReactionTime < 421) %>%
           group_by(Email, PID, Intens, Modal) %>%
           summarise(median = median(ReactionTime))
@@ -282,9 +311,9 @@ server <- function(input, output, session) {
 
       # density plot
       output$rtDensityPlot <- renderPlotly({
-        validate(need(nrow(dfrt) > 0, print_nodata_msg()))
+        validate(need(nrow(r$dfrt) > 0, print_nodata_msg()))
 
-        ggdensityPlot <- ggplot(dfrt, aes(ReactionTime, color = Intens)) +
+        ggdensityPlot <- ggplot(r$dfrt, aes(ReactionTime, color = Intens)) +
           geom_density() +
           scale_x_continuous(limits = c(-50, 800), breaks = seq(0, 800, by = 100)) +
           xlab("reaction time in ms") +
@@ -292,21 +321,21 @@ server <- function(input, output, session) {
           facet_grid(cols = vars(Modal))
         ggplotly(p = ggdensityPlot) %>% config(scrollZoom = TRUE)
       })
-    } else if (subject == "synch") {
-      print(paste("dfsynch filtered nrow:", nrow(dfsynch)))
+    } else if (r$subject == "synch") {
+      print(paste("dfsynch filtered nrow:", nrow(r$dfsynch)))
 
       # SYNCH ABILITY VS INTENSITY PLOT -------
       output$synchViolinPlot <- renderPlotly({
-        validate(need(nrow(dfsynch) > 0, print_nodata_msg()))
+        validate(need(nrow(r$dfsynch) > 0, print_nodata_msg()))
 
-        dfsynch <- dfsynch[!is.na(dfsynch$ReactionTime), ]
+        r$dfsynch <- r$dfsynch[!is.na(r$dfsynch$ReactionTime), ]
         ggsynchViolinPlot <- ggplot(
-          dfsynch,
+          r$dfsynch,
           aes(Intens, ReactionTime, fill = Modal)
         ) +
           geom_violin() +
           facet_wrap(vars(MusicalAbility)) +
-          geom_point(data = dfsynch, aes(Intens, ReactionTime, fill = Modal), alpha = 0.2, position = position_jitterdodge()) +
+          geom_point(data = r$dfsynch, aes(Intens, ReactionTime, fill = Modal), alpha = 0.2, position = position_jitterdodge()) +
           xlab("Intensity") +
           ylab("Synch Offset (ms)") +
           theme_minimal() +
@@ -317,8 +346,8 @@ server <- function(input, output, session) {
 
       # Synch Performance based on Musical Ability Plot
       output$synchAbilityByMusicalityPlot <- renderPlotly({
-        validate(need(nrow(dfsynch) > 0, print_nodata_msg()))
-        ggsynchMusicalAbilityPlot <- ggplot(dfsynch, aes(ReactionTime, color = MusicalAbility)) +
+        validate(need(nrow(r$dfsynch) > 0, print_nodata_msg()))
+        ggsynchMusicalAbilityPlot <- ggplot(r$dfsynch, aes(ReactionTime, color = MusicalAbility)) +
           geom_vline(xintercept = 0) +
           geom_density() +
           scale_x_continuous(limits = c(-500, 500), breaks = seq(-500, 500, by = 100)) +
@@ -329,8 +358,8 @@ server <- function(input, output, session) {
       })
 
       output$GettingIntoSynchByMusicalityPlotPower <- renderPlotly({
-        validate(need(nrow(dfsynch) > 0, print_nodata_msg()))
-        GettingIntoSynchByMusicalityPlotPowerX <- ggplot(dfsynch, aes(x = runTrialNo, y = absSynchOffset)) +
+        validate(need(nrow(r$dfsynch) > 0, print_nodata_msg()))
+        GettingIntoSynchByMusicalityPlotPowerX <- ggplot(r$dfsynch, aes(x = runTrialNo, y = absSynchOffset)) +
           geom_point() +
           geom_smooth(size = 0) +
           stat_smooth(aes(color = "red"), method = "nls", formula = "y~a*x^b", method.args = list(start = c(a = 1, b = 1)), se = FALSE) +
@@ -342,21 +371,21 @@ server <- function(input, output, session) {
       })
     }
 
-    else if (subject == "EDAIBISerial") {
+    else if (r$subject == "EDAIBISerial") {
       # physio  PLOT -------
-      # dfIBI <<- dfphysio[dfphysio$IBI!=0,]
-      # IBI<<-dfIBI[,c("IBI")]
+      # dfIBI <- dfphysio[dfphysio$IBI!=0,]
+      # IBI<-dfIBI[,c("IBI")]
       # source("HRCalculations.R")
       output$physioIBIplot <- renderPlotly({
-        validate(need(nrow(dfphysio) > 0, print_nodata_msg()))
-        IBIplot <- ggplot(dfIBI, aes(x = TimeLine, y = IBI)) +
+        validate(need(nrow(r$dfphysio) > 0, print_nodata_msg()))
+        IBIplot <- ggplot(r$dfIBI, aes(x = TimeLine, y = IBI)) +
           geom_point() +
           ylab("inter-beat interval in ms") +
           xlab("time line in seconds") +
           geom_line() +
           theme_bw() +
-          scale_y_continuous(breaks = seq(0, max(dfIBI$IBI), 200)) +
-          scale_x_continuous(breaks = seq(0, max(dfIBI$TimeLine), 1)) +
+          scale_y_continuous(breaks = seq(0, max(r$dfIBI$IBI), 200)) +
+          scale_x_continuous(breaks = seq(0, max(r$dfIBI$TimeLine), 1)) +
           expand_limits(x = 0, y = 0) +
           geom_hline(yintercept = 300, color = "red") +
           geom_hline(yintercept = 2000, color = "green")
@@ -364,39 +393,39 @@ server <- function(input, output, session) {
       })
 
       # ##### HRV stuff -------
-      if (nrow(dfIBI) < 1000) {
+      if (nrow(r$dfIBI) < 1000) {
         return()
       }
-      tsIBI <<- as.data.frame(cumsum(c(0, dfIBI[2:nrow(dfIBI), ]$IBI / 1000)))
-      names(tsIBI) <<- c("beats")
+      r$tsIBI <- as.data.frame(cumsum(c(0, r$dfIBI[2:nrow(r$dfIBI), ]$IBI / 1000)))
+      names(r$tsIBI) <- c("beats")
       #
       # #need to write data back to file as I couldn't figure out how to simply inject it into the data structure, the file should be safe to delete after this
-      # beatAscii <- write.table(tsIBI$beats, file = "", sep = ",", qmethod = "double", row.names = FALSE, col.names = FALSE)
+      # beatAscii <- write.table(r$tsIBI$beats, file = "", sep = ",", qmethod = "double", row.names = FALSE, col.names = FALSE)
       #
       # #create data structure
 
-      hrv.data <<- CreateHRVData()
+      r$hrv.data <- CreateHRVData()
       #
       # #load the beat data
-      hrv.data <<- LoadBeatString(hrv.data, tsIBI$beats)
+      r$hrv.data <- LoadBeatString(r$hrv.data, r$tsIBI$beats)
       #
       # #make a non-interpolated plot of the heart rate
-      hrv.data <<- BuildNIHR(hrv.data)
-      hrv.data <<- FilterNIHR(hrv.data)
-      hrv.data <<- InterpolateNIHR(hrv.data, freqhr = 4)
+      r$hrv.data <- BuildNIHR(r$hrv.data)
+      r$hrv.data <- FilterNIHR(r$hrv.data)
+      r$hrv.data <- InterpolateNIHR(r$hrv.data, freqhr = 4)
       #
       # PlotNIHR(hrv.data, main = "niHR",Tags = "all")
       #
       # #Create a time analysis, the values here are the same as the default
-      hrv.data <<- CreateTimeAnalysis(hrv.data, size = floor(max(dfphysio$TimeLine)) / 2, interval = 7.8125)
+      r$hrv.data <- CreateTimeAnalysis(r$hrv.data, size = floor(max(r$dfphysio$TimeLine)) / 2, interval = 7.8125)
       #
       # #Do the frequency analysis
-      hrv.data <<- CreateFreqAnalysis(hrv.data)
+      r$hrv.data <- CreateFreqAnalysis(r$hrv.data)
       #
       #
       # #Creates a power bands plot to see the values of LF/HF etc. over time
-      hrv.data <<-
-        CalculatePowerBand(hrv.data,
+      r$hrv.data <-
+        CalculatePowerBand(r$hrv.data,
           indexFreqAnalysis = 1,
           size = 100, shift = 2, type = "fourier",
           ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
@@ -404,42 +433,42 @@ server <- function(input, output, session) {
         )
 
       # #create nonlinear analysis
-      hrv.data <<- CreateNonLinearAnalysis(hrv.data)
-      hrv.data <<- NonlinearityTests(hrv.data)
-      hrv.data <<- PoincarePlot(hrv.data, indexNonLinearAnalysis = 1, timeLag = 1, confidenceEstimation = TRUE, confidence = 0.9, doPlot = TRUE)
-      poincareRecordplot <<- recordPlot()
+      r$hrv.data <- CreateNonLinearAnalysis(r$hrv.data)
+      r$hrv.data <- NonlinearityTests(r$hrv.data)
+      r$hrv.data <- PoincarePlot(r$hrv.data, indexNonLinearAnalysis = 1, timeLag = 1, confidenceEstimation = TRUE, confidence = 0.9, doPlot = TRUE)
+      poincareRecordplot <- recordPlot()
       dev.off()
       #
       #
       # #Put all the values into a single variable each for easier display  in a table
-      SDNN <<- round(hrv.data$TimeAnalysis[[1]]$SDNN, 1)
-      pNN50 <<- round(hrv.data$TimeAnalysis[[1]]$pNN50, 1)
-      rMSSD <<- round(hrv.data$TimeAnalysis[[1]]$rMSSD, 1)
-      avgLF <<- round(mean(hrv.data$FreqAnalysis[[1]]$LF), 1)
-      avgHF <<- round(mean(hrv.data$FreqAnalysis[[1]]$HF), 1)
-      avgLFHF <<- round(avgLF / avgHF, 1)
-      SD1 <<- round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1, 1)
-      SD2 <<- round(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2, 1)
+      SDNN <- round(r$hrv.data$TimeAnalysis[[1]]$SDNN, 1)
+      pNN50 <- round(r$hrv.data$TimeAnalysis[[1]]$pNN50, 1)
+      rMSSD <- round(r$hrv.data$TimeAnalysis[[1]]$rMSSD, 1)
+      avgLF <- round(mean(r$hrv.data$FreqAnalysis[[1]]$LF), 1)
+      avgHF <- round(mean(r$hrv.data$FreqAnalysis[[1]]$HF), 1)
+      avgLFHF <- round(avgLF / avgHF, 1)
+      SD1 <- round(r$hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1, 1)
+      SD2 <- round(r$hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2, 1)
 
       types <- c("Time domain", "", "", "Frequency domain", "", "", "Non-linear", "")
       measures <- c("SDNN", "pNN50", "rMSSD", "avg LF", "avg HF", "avg LF/HF", "SD1", "SD2")
       mvalues <- c(SDNN, pNN50, rMSSD, avgLF, avgHF, avgLFHF, SD1, SD2)
-      dfHRV <<- data.frame(cbind(types, measures, mvalues))
-      dfHRV$types <- as.character(dfHRV$types)
-      dfHRV$measures <- as.character(dfHRV$measures)
+      r$dfHRV <- data.frame(cbind(types, measures, mvalues))
+      r$dfHRV$types <- as.character(r$dfHRV$types)
+      r$dfHRV$measures <- as.character(r$dfHRV$measures)
       output$HRVtable <- renderTable({
-        validate(need(nrow(dfphysio) > 0, print_nodata_msg()))
+        validate(need(nrow(r$dfphysio) > 0, print_nodata_msg()))
         dfHRV
       })
 
 
       # ###################
       # #Plots the powerband calculations from above, ymax can be changed to change the y-max value on ULF VLF LF and HF graphs while ymaxratio changes the max y value on the LF/HF graph.
-      powerBandPlotX <<- PlotPowerBand(hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
-      powerBandPlotXRec <<- recordPlot()
+      powerBandPlotX <- PlotPowerBand(r$hrv.data, indexFreqAnalysis = 1, ymax = 1200, ymaxratio = 16)
+      powerBandPlotXRec <- recordPlot()
       dev.off()
-      output$powerBandPlot <<- renderPlot({
-        validate(need(nrow(dfphysio) > 0, print_nodata_msg()))
+      output$powerBandPlot <- renderPlot({
+        validate(need(nrow(r$dfphysio) > 0, print_nodata_msg()))
         print(powerBandPlotXRec)
       })
 
@@ -447,33 +476,33 @@ server <- function(input, output, session) {
 
 
       output$poincarePlot <- renderPlot({
-        validate(need(nrow(dfphysio) > 0, print_nodata_msg()))
+        validate(need(nrow(r$dfphysio) > 0, print_nodata_msg()))
         print(poincareRecordplot)
       })
 
       output$EDAplot <- renderPlotly({
-        validate(need(nrow(dfphysio) > 0, print_nodata_msg()))
-        EDAplotX <- ggplot(dfphysio, aes(x = TimeLine, y = EDAsmoothed)) +
+        validate(need(nrow(r$dfphysio) > 0, print_nodata_msg()))
+        EDAplotX <- ggplot(r$dfphysio, aes(x = TimeLine, y = EDAsmoothed)) +
           ylab("conductivity in...?") +
           xlab("time line in seconds") +
           geom_line() +
           theme_bw() +
-          scale_y_continuous(breaks = seq(0, max(dfIBI$IBI), 200)) +
-          scale_x_continuous(breaks = seq(0, max(dfIBI$TimeLine), 1)) +
+          scale_y_continuous(breaks = seq(0, max(r$dfIBI$IBI), 200)) +
+          scale_x_continuous(breaks = seq(0, max(r$dfIBI$TimeLine), 1)) +
           expand_limits(x = 0, y = 0) +
           facet_grid(rows = vars(TimeStamp))
         ggplotly(p = EDAplotX) %>% config(scrollZoom = TRUE)
       })
 
       output$EDAplotBW <- renderPlotly({
-        validate(need(nrow(dfphysio) > 0, print_nodata_msg()))
-        EDAplotbwX <- ggplot(dfphysio, aes(x = TimeLine, y = EDAsmoothedbw)) +
+        validate(need(nrow(r$dfphysio) > 0, print_nodata_msg()))
+        EDAplotbwX <- ggplot(r$dfphysio, aes(x = TimeLine, y = EDAsmoothedbw)) +
           ylab("conductivity in...?") +
           xlab("time line in seconds") +
           geom_line() +
           theme_bw() +
-          scale_y_continuous(breaks = seq(0, max(dfIBI$IBI), 200)) +
-          scale_x_continuous(breaks = seq(0, max(dfIBI$TimeLine), 1)) +
+          scale_y_continuous(breaks = seq(0, max(r$dfIBI$IBI), 200)) +
+          scale_x_continuous(breaks = seq(0, max(r$dfIBI$TimeLine), 1)) +
           expand_limits(x = 0, y = 0) +
           facet_grid(rows = vars(TimeStamp))
         ggplotly(p = EDAplotbwX) %>% config(scrollZoom = TRUE)
