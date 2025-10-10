@@ -132,10 +132,10 @@ RefreshDataSets <- function(colfilter) {
 
 RefreshDataLocal <- function(n_dfrt, n_dfsynch, n_dfphysio, n_dfIBI) {
   r <- reactiveValues(
-    dfrt = NULL,
-    dfsynch = NULL,
-    dfphysio = NULL,
-    dfIBI = NULL
+    dfrt = data.frame(),
+    dfsynch = data.frame(),
+    dfphysio = data.frame(),
+    dfIBI = data.frame()
   )
   
   # REFRESH REACTION TIME DATASET
@@ -185,7 +185,7 @@ RefreshDataLocal <- function(n_dfrt, n_dfsynch, n_dfphysio, n_dfIBI) {
     r$dfphysio$EDAsmoothed <- c(rep(NA, 9), rollmean(r$dfphysio$EDA, 10))
     r$dfphysio$EDAsmoothedbw <- bwfilter(r$dfphysio$EDA, f = 100, n = 5, to = 1)
     r$dfIBI <- r$dfphysio %>% filter(IBI != 0)
-    if (nrow(n_dfIBI) > 9) {
+    if (nrow(r$dfIBI) > 9) {
       r$dfIBI$TimeLine <- cumsum(c(0, r$dfIBI[2:nrow(r$dfIBI), ]$IBI / 1000))
       r$dfIBIstart <- r$dfphysio[r$dfphysio$IBI != 0, c("TimeStamp", "Email", "PID", "Comment", "Millis")] %>%
         group_by(Email, TimeStamp) %>%

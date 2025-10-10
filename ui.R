@@ -13,12 +13,12 @@ ui <- fluidPage(
       column(11,
         style = "margin-top : 20px; text-align: center;",
         actionButton("CsvButton","Upload CSV"),
-        selectInput("emailSelect", NULL, choices = c("Loading.." = -1))
+        selectInput("emailSelect", NULL, choices = c("Press Upload CSV to Upload Data." = -1))
       )
     )
   ),
   fluidRow(
-    column(12, checkboxGroupInput("pidChooser", label = "Loading...", choices = NULL, inline = TRUE))
+    column(12, checkboxGroupInput("pidChooser", label = "Press Upload CSV to Upload Data.", choices = NULL, inline = TRUE))
   ),
   # RT part------
   tabsetPanel(
