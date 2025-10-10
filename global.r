@@ -11,6 +11,7 @@ library("nonlinearTseries")
 # source("HRVhelpers/CalculateCorrelationDimension.R")
 source("modules/csv_upload_module.R", local = T)
 source("LoadBeatString.R")
+options(shiny.fullstacktrace=TRUE)
 pdf(NULL)
 options(shiny.maxRequestSize=100*1024^2)
 
@@ -129,59 +130,76 @@ RefreshDataSets <- function(colfilter) {
   }
 }
 
-RefreshDataLocal <- function() {
+RefreshDataLocal <- function(n_dfrt, n_dfsynch, n_dfphysio, n_dfIBI) {
+  r <- reactiveValues(
+    dfrt = NULL,
+    dfsynch = NULL,
+    dfphysio = NULL,
+    dfIBI = NULL
+  )
+  
   # REFRESH REACTION TIME DATASET
-  if (nrow(dfrt) > 0) {
-    dfrt$Intens <<- as.factor(dfrt$Intens)
-    dfrt$Intens <<- factor(dfrt$Intens, levels = c("Low", "High"))
-    dfrt$ReactionTimeRounded <<- round(dfrt$ReactionTime, digits = -1)
-    dfrt$Modal <<- as.factor(dfrt$Modal)
-    dfrt$RunningTrialNum
-    dfrt <<- dfrt %>% arrange(TimeStamp) %>% select(Email,SessionID) %>% distinct() %>% mutate(runningTrialNum=1:n()) %>% merge(dfrt)
+  if (nrow(n_dfrt) > 0) {
+    r$dfrt = n_dfrt
+    r$dfrt$Intens <- as.factor(r$dfrt$Intens)
+    r$dfrt$Intens <- factor(r$dfrt$Intens, levels = c("Low", "High"))
+    r$dfrt$ReactionTimeRounded <<- round(r$dfrt$ReactionTime, digits = -1)
+    r$dfrt$Modal <- as.factor(r$dfrt$Modal)
+    r$dfrt$RunningTrialNum
+    r$dfrt <- r$dfrt %>% arrange(TimeStamp) %>% select(Email,SessionID) %>% distinct() %>% mutate(runningTrialNum=1:n()) %>% merge(dfrt)
   }
   # REFRESH SYNCH DATASET
-  if (nrow(dfsynch) > 0) {
-    dfsynch$run <<- floor(dfsynch$TrialNo / 21)
-    dfsynch$runTrialNo <<- ifelse(dfsynch$TrialNo > 20, dfsynch$TrialNo - 20, dfsynch$TrialNo)
-    dfsynch$absSynchOffset <<- abs(dfsynch$ReactionTime)
-    dfsynch$Intens <<- as.factor(dfsynch$Intens)
-    dfsynch$Intens <<- factor(dfsynch$Intens, levels = c("Low", "High"))
-    dfsynch$Modal <<- as.factor(dfsynch$Modal)
-    dfsynch$MusicalAbility <<- as.factor(dfsynch$MusicalAbility)
+  if (nrow(n_dfsynch) > 0) {
+    r$dfsynch = n_dfsynch
+    r$dfsynch$run <- floor(r$dfsynch$TrialNo / 21)
+    r$dfsynch$runTrialNo <- ifelse(r$dfsynch$TrialNo > 20, r$dfsynch$TrialNo - 20, r$dfsynch$TrialNo)
+    r$dfsynch$absSynchOffset <- abs(r$dfsynch$ReactionTime)
+    r$dfsynch$Intens <- as.factor(r$dfsynch$Intens)
+    r$dfsynch$Intens <- factor(r$dfsynch$Intens, levels = c("Low", "High"))
+    r$dfsynch$Modal <- as.factor(r$dfsynch$Modal)
+    r$dfsynch$MusicalAbility <- as.factor(r$dfsynch$MusicalAbility)
   }
   # REFRESH physio DATASET
-  if (nrow(dfphysio) > 9) {
+  if (nrow(n_dfphysio) > 9) {
+    r$dfphysio = n_dfphysio
+    r$dfIBI = n_dfIBI
     # The session terminates if rollmean() is called on dataframes with less than 10 rows.
-    dfphysio$Millis <<- as.integer(dfphysio$Millis)
-    dfphysio$EDA <<- as.integer(dfphysio$EDA)
-    dfphysio$IBI <<- as.integer(dfphysio$IBI)
-    dfphysio$RawPulse <<- as.integer(dfphysio$RawPulse)
-    dfphysio$Pressure <<- as.integer(dfphysio$Pressure)
-    dfphysio$Button <<- as.integer(dfphysio$Button)
+    r$dfphysio$Millis <- as.integer(r$dfphysio$Millis)
+    r$dfphysio$EDA <- as.integer(r$dfphysio$EDA)
+    r$dfphysio$IBI <- as.integer(r$dfphysio$IBI)
+    r$dfphysio$RawPulse <- as.integer(r$dfphysio$RawPulse)
+    r$dfphysio$Pressure <- as.integer(r$dfphysio$Pressure)
+    r$dfphysio$Button <- as.integer(r$dfphysio$Button)
     
-    dfEDAStart <<- dfphysio[, c("TimeStamp", "Email", "PID", "Comment", "Millis")] %>%
+    # Some CSV files has wrong S..
+    if (is.null(r$dfphysio$TimeStamp)) {
+      r$dfphysio$TimeStamp = r$dfphysio$Timestamp
+    }
+    
+    r$dfEDAStart <- r$dfphysio[, c("TimeStamp", "Email", "PID", "Comment", "Millis")] %>%
       group_by(Email, TimeStamp) %>%
       slice(which.min(Millis))
-    dfEDAStart <<- rename(dfEDAStart, EDAStartMillis = Millis)
-    dfphysio <<- merge(dfphysio, dfEDAStart, by = c("TimeStamp", "PID", "Comment", "Email"))
-    dfphysio$TimeLine <<- (dfphysio$Millis - dfphysio$EDAStartMillis) / 1000
-    dfphysio$EDAsmoothed <<- c(rep(NA, 9), rollmean(dfphysio$EDA, 10))
-    dfphysio$EDAsmoothedbw <<- bwfilter(dfphysio$EDA, f = 100, n = 5, to = 1)
-    dfIBI <<- dfphysio %>% filter(IBI != 0)
+    r$dfEDAStart <- rename(r$dfEDAStart, EDAStartMillis = Millis)
+    r$dfphysio <- merge(r$dfphysio, r$dfEDAStart, by = c("TimeStamp", "PID", "Comment", "Email"))
+    r$dfphysio$TimeLine <- (r$dfphysio$Millis - r$dfphysio$EDAStartMillis) / 1000
+    r$dfphysio$EDAsmoothed <- c(rep(NA, 9), rollmean(r$dfphysio$EDA, 10))
+    r$dfphysio$EDAsmoothedbw <- bwfilter(r$dfphysio$EDA, f = 100, n = 5, to = 1)
+    r$dfIBI <- r$dfphysio %>% filter(IBI != 0)
     if (nrow(dfIBI) > 9) {
-      dfIBI$TimeLine <<- cumsum(c(0, dfIBI[2:nrow(dfIBI), ]$IBI / 1000))
-      dfIBIstart <- dfphysio[dfphysio$IBI != 0, c("TimeStamp", "Email", "PID", "Comment", "Millis")] %>%
+      r$dfIBI$TimeLine <- cumsum(c(0, r$dfIBI[2:nrow(r$dfIBI), ]$IBI / 1000))
+      r$dfIBIstart <- r$dfphysio[r$dfphysio$IBI != 0, c("TimeStamp", "Email", "PID", "Comment", "Millis")] %>%
         group_by(Email, TimeStamp) %>%
         slice(which.min(Millis))
-      dfIBIstart <- rename(dfIBIstart, IBIStartMillis = Millis)
+      r$dfIBIstart <- rename(r$dfIBIstart, IBIStartMillis = Millis)
       
-      dfphysio <<- merge(dfphysio, dfIBIstart, by = c("TimeStamp", "PID", "Comment", "Email"))
-      dfphysio$start <<- dfphysio$Millis - dfphysio$IBIStartMillis
+      r$dfphysio <- merge(r$dfphysio, r$dfIBIstart, by = c("TimeStamp", "PID", "Comment", "Email"))
+      r$dfphysio$start <- r$dfphysio$Millis - r$dfphysio$IBIStartMillis
     }
   }
+  return(r)
 }
 
 
-dfrt <- data.frame()
-dfsynch <- data.frame()
-dfphysio <- data.frame()
+#dfrt <- data.frame()
+#dfsynch <- data.frame()
+#dfphysio <- data.frame()

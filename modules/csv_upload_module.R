@@ -43,7 +43,7 @@ csv_upload <- function(input, output, session) {
       toReturn$trigger <- toReturn$trigger + 1
       toReturn$df = toReturn$dfsynch
     }
-    if (!is.null(input$dfEDAIBISerial)) {
+    if (!is.null(input$fileEDAIBISerial)) {
       toReturn$dfEDAIBISerial <- csv_upload_combine_data(input$fileEDAIBISerial$datapath)
       toReturn$trigger <- toReturn$trigger + 1
       toReturn$df = toReturn$dfEDAIBISerial
@@ -64,8 +64,9 @@ csv_upload_combine_data <- function(files) {
   data_list = lapply(files, function(file) {
     read.csv(file, na.strings="NULL", sep=";")
   })
+  
   if (length(data_list) > 1) {
-    data = Reduce(function(x, y) left_join(x, y), data_list)
+    data = Reduce(function(x, y) bind_rows(x, y), data_list)
   } else {
     data <- data_list[[1]]
   }
